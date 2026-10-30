@@ -1,30 +1,43 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mindspark/app.dart';
+import 'package:mindspark/features/settings/settings_screen.dart';
 
-import 'package:mindspark/main.dart';
+Future<void> pumpApp(WidgetTester tester) async {
+  await tester.pumpWidget(const ProviderScope(child: MindSparkApp()));
+  await tester.pumpAndSettle();
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('starts on Home with the navigation bar', (tester) async {
+    await pumpApp(tester);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('Sample quote'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('bottom navigation switches tabs', (tester) async {
+    await pumpApp(tester);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.tap(find.descendant(
+      of: find.byType(NavigationBar),
+      matching: find.text('Library'),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quote library'), findsOneWidget);
+  });
+
+  testWidgets('theme can be switched to dark in Settings', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dark'));
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(SettingsScreen));
+    expect(Theme.of(context).brightness, Brightness.dark);
   });
 }
