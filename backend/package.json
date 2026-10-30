@@ -1,0 +1,17 @@
+{
+  "name": "mindspark-backend",
+  "version": "0.1.0",
+  "description": "MindSpark REST API (Express, MongoDB Atlas)",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "type": "commonjs",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}
