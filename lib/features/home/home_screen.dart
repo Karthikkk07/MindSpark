@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/app_routes.dart';
-import '../../core/theme/app_theme.dart';
+import '../../models/quote.dart';
+import '../quotes/quote_providers.dart';
+import 'widgets/quote_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   static String _greeting() {
@@ -14,10 +18,20 @@ class HomeScreen extends StatelessWidget {
     return 'Good evening';
   }
 
+  Future<void> _copy(BuildContext context, Quote quote) async {
+    final messenger = ScaffoldMessenger.of(context);
+    await Clipboard.setData(
+      ClipboardData(text: '"${quote.text}" - ${quote.author}'),
+    );
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Copied to clipboard')),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final featured = ref.watch(featuredQuoteProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -38,46 +52,55 @@ class HomeScreen extends StatelessWidget {
           Text(
             'Here is a thought for today.',
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: scheme.onSurfaceVariant,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 24),
-          Card(
-            elevation: 0,
-            color: scheme.primaryContainer,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.format_quote_rounded,
-                    size: 36,
-                    color: scheme.onPrimaryContainer,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Small steps, taken daily, quietly rewrite the story.',
-                    style: AppTheme.quoteStyle(context).copyWith(
-                      color: scheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'MindSpark',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: scheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Chip(label: Text('Sample quote')),
-                ],
+          featured.when(
+            data: (quote) => AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: QuoteCard(
+                key: ValueKey(quote.id),
+                quote: quote,
+                onCopy: () => _copy(context, quote),
+                onNewQuote: () =>
+                    ref.read(featuredQuoteProvider.notifier).next(),
               ),
             ),
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 48),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (error, stack) => _LoadError(
+              onRetry: () => ref.invalidate(featuredQuoteProvider),
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadError extends StatelessWidget {
+  const _LoadError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Column(
+        children: [
+          Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
+          const SizedBox(height: 12),
+          Text(
+            'We could not load your quotes.',
+            style: theme.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(onPressed: onRetry, child: const Text('Try again')),
         ],
       ),
     );

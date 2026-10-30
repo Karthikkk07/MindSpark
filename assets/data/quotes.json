@@ -1,0 +1,365 @@
+{
+    "version":  1,
+    "quotes":  [
+                   {
+                       "id":  "q001",
+                       "text":  "Understanding is built in layers; show up for the next layer today.",
+                       "author":  "MindSpark",
+                       "category":  "study",
+                       "tags":  [
+                                    "learning",
+                                    "habits"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q002",
+                       "text":  "A hard chapter is just an easy chapter you have not met properly yet.",
+                       "author":  "MindSpark",
+                       "category":  "study",
+                       "tags":  [
+                                    "learning",
+                                    "mindset"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q003",
+                       "text":  "Study in short, honest sessions. Focus is a habit, not a mood.",
+                       "author":  "MindSpark",
+                       "category":  "study",
+                       "tags":  [
+                                    "focus",
+                                    "habits"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q004",
+                       "text":  "Do the next small thing well, and the big thing starts to move.",
+                       "author":  "MindSpark",
+                       "category":  "productivity",
+                       "tags":  [
+                                    "action",
+                                    "progress"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q005",
+                       "text":  "Clear the first ten minutes and the rest of the day follows.",
+                       "author":  "MindSpark",
+                       "category":  "productivity",
+                       "tags":  [
+                                    "habits",
+                                    "mornings"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q006",
+                       "text":  "Busy is a schedule. Progress is a direction.",
+                       "author":  "MindSpark",
+                       "category":  "productivity",
+                       "tags":  [
+                                    "focus",
+                                    "progress"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q007",
+                       "text":  "Every bug you fix teaches you something the tutorial could not.",
+                       "author":  "MindSpark",
+                       "category":  "coding",
+                       "tags":  [
+                                    "debugging",
+                                    "learning"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q008",
+                       "text":  "Write the simplest thing that works, then make it better.",
+                       "author":  "MindSpark",
+                       "category":  "coding",
+                       "tags":  [
+                                    "craft",
+                                    "simplicity"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q009",
+                       "text":  "Readable code is a gift to the person you will be next month.",
+                       "author":  "MindSpark",
+                       "category":  "coding",
+                       "tags":  [
+                                    "craft",
+                                    "teamwork"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q010",
+                       "text":  "A career is built from ordinary weeks done with care.",
+                       "author":  "MindSpark",
+                       "category":  "career",
+                       "tags":  [
+                                    "consistency",
+                                    "work"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q011",
+                       "text":  "Say yes to the work that stretches you a little.",
+                       "author":  "MindSpark",
+                       "category":  "career",
+                       "tags":  [
+                                    "growth",
+                                    "opportunity"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q012",
+                       "text":  "Your next opportunity often arrives through someone you helped last year.",
+                       "author":  "MindSpark",
+                       "category":  "career",
+                       "tags":  [
+                                    "network",
+                                    "kindness"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q013",
+                       "text":  "Ask good questions early; nobody expects an intern to know everything.",
+                       "author":  "MindSpark",
+                       "category":  "internships",
+                       "tags":  [
+                                    "learning",
+                                    "questions"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q014",
+                       "text":  "Treat every small task as a chance to be the person they remember.",
+                       "author":  "MindSpark",
+                       "category":  "internships",
+                       "tags":  [
+                                    "work",
+                                    "reputation"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q015",
+                       "text":  "Learn the team\u0027s way of working, then add your own spark.",
+                       "author":  "MindSpark",
+                       "category":  "internships",
+                       "tags":  [
+                                    "teamwork",
+                                    "growth"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q016",
+                       "text":  "You do not need a perfect plan, just the next workout.",
+                       "author":  "MindSpark",
+                       "category":  "fitness",
+                       "tags":  [
+                                    "action",
+                                    "habits"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q017",
+                       "text":  "Rest is part of training, not a break from it.",
+                       "author":  "MindSpark",
+                       "category":  "fitness",
+                       "tags":  [
+                                    "recovery",
+                                    "balance"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q018",
+                       "text":  "Strength is the sum of the days you did not skip.",
+                       "author":  "MindSpark",
+                       "category":  "fitness",
+                       "tags":  [
+                                    "consistency",
+                                    "discipline"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q019",
+                       "text":  "Solve a real problem for one person, then do it again for ten.",
+                       "author":  "MindSpark",
+                       "category":  "business",
+                       "tags":  [
+                                    "startups",
+                                    "customers"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q020",
+                       "text":  "Customers forgive mistakes faster than they forgive silence.",
+                       "author":  "MindSpark",
+                       "category":  "business",
+                       "tags":  [
+                                    "customers",
+                                    "trust"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q021",
+                       "text":  "Start before you feel ready; refine while you are moving.",
+                       "author":  "MindSpark",
+                       "category":  "business",
+                       "tags":  [
+                                    "action",
+                                    "startups"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q022",
+                       "text":  "Small amounts saved regularly beat big plans postponed.",
+                       "author":  "MindSpark",
+                       "category":  "finance",
+                       "tags":  [
+                                    "saving",
+                                    "habits"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q023",
+                       "text":  "Know where your money goes before you decide where it should go.",
+                       "author":  "MindSpark",
+                       "category":  "finance",
+                       "tags":  [
+                                    "budgeting",
+                                    "awareness"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q024",
+                       "text":  "Patience is the quiet engine behind long-term savings.",
+                       "author":  "MindSpark",
+                       "category":  "finance",
+                       "tags":  [
+                                    "saving",
+                                    "patience"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q025",
+                       "text":  "Listen to understand, not to reply.",
+                       "author":  "MindSpark",
+                       "category":  "relationships",
+                       "tags":  [
+                                    "listening",
+                                    "communication"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q026",
+                       "text":  "Small kindnesses, repeated, become trust.",
+                       "author":  "MindSpark",
+                       "category":  "relationships",
+                       "tags":  [
+                                    "trust",
+                                    "kindness"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q027",
+                       "text":  "Be the friend you would want on your hardest day.",
+                       "author":  "MindSpark",
+                       "category":  "relationships",
+                       "tags":  [
+                                    "friendship",
+                                    "support"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q028",
+                       "text":  "You are allowed to be a work in progress and a work worth doing.",
+                       "author":  "MindSpark",
+                       "category":  "growth",
+                       "tags":  [
+                                    "self-worth",
+                                    "progress"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q029",
+                       "text":  "Courage is taking the next step while still a little afraid.",
+                       "author":  "MindSpark",
+                       "category":  "growth",
+                       "tags":  [
+                                    "courage",
+                                    "action"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   },
+                   {
+                       "id":  "q030",
+                       "text":  "Growth is rarely loud; it shows up as a better choice made quietly.",
+                       "author":  "MindSpark",
+                       "category":  "growth",
+                       "tags":  [
+                                    "habits",
+                                    "mindset"
+                                ],
+                       "source":  "Written for MindSpark",
+                       "license":  "Original content"
+                   }
+               ]
+}
