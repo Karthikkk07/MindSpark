@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Holds the user's chosen theme mode (system, light or dark).
-class ThemeModeController extends Notifier<ThemeMode> {
-  @override
-  ThemeMode build() => ThemeMode.system;
+import '../prefs/user_prefs_controller.dart';
 
-  void setMode(ThemeMode mode) => state = mode;
-}
-
-final themeModeProvider =
-    NotifierProvider<ThemeModeController, ThemeMode>(ThemeModeController.new);
+/// The theme mode the app should use, derived from the saved preferences.
+final themeModeProvider = Provider<ThemeMode>(
+  (ref) => ref.watch(userPrefsProvider.select((prefs) => prefs.themeMode)),
+);

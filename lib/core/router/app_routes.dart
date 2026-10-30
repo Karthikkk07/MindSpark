@@ -2,6 +2,7 @@
 class AppRoutes {
   AppRoutes._();
 
+  static const onboarding = '/onboarding';
   static const home = '/home';
   static const library = '/library';
   static const favorites = '/favorites';

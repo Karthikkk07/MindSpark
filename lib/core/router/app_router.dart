@@ -4,15 +4,29 @@ import 'package:go_router/go_router.dart';
 import '../../features/favorites/favorites_screen.dart';
 import '../../features/goals/goals_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/quotes/library_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../prefs/user_prefs_controller.dart';
 import '../shell/main_shell.dart';
 import 'app_routes.dart';
 
-GoRouter createRouter() {
+GoRouter createRouter({required bool Function() onboardingComplete}) {
   return GoRouter(
-    initialLocation: AppRoutes.home,
+    initialLocation:
+        onboardingComplete() ? AppRoutes.home : AppRoutes.onboarding,
+    redirect: (context, state) {
+      if (!onboardingComplete() &&
+          state.matchedLocation != AppRoutes.onboarding) {
+        return AppRoutes.onboarding;
+      }
+      return null;
+    },
     routes: [
+      GoRoute(
+        path: AppRoutes.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainShell(navigationShell: navigationShell),
@@ -53,7 +67,9 @@ GoRouter createRouter() {
 
 /// One router per ProviderScope, so tests start from a clean state.
 final routerProvider = Provider<GoRouter>((ref) {
-  final router = createRouter();
+  final router = createRouter(
+    onboardingComplete: () => ref.read(userPrefsProvider).onboardingComplete,
+  );
   ref.onDispose(router.dispose);
   return router;
 });
