@@ -6,6 +6,7 @@ import '../../features/goals/goals_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/quotes/library_screen.dart';
+import '../../features/quotes/quote_detail_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../prefs/user_prefs_controller.dart';
 import '../shell/main_shell.dart';
@@ -56,6 +57,11 @@ GoRouter createRouter({required bool Function() onboardingComplete}) {
             ),
           ]),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.quoteDetail,
+        builder: (context, state) =>
+            QuoteDetailScreen(quoteId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.settings,
