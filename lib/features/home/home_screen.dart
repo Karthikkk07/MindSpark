@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/app_routes.dart';
-import '../../models/quote.dart';
 import '../quotes/quote_providers.dart';
 import 'widgets/quote_card.dart';
 
@@ -16,16 +14,6 @@ class HomeScreen extends ConsumerWidget {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
-  }
-
-  Future<void> _copy(BuildContext context, Quote quote) async {
-    final messenger = ScaffoldMessenger.of(context);
-    await Clipboard.setData(
-      ClipboardData(text: '"${quote.text}" - ${quote.author}'),
-    );
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Copied to clipboard')),
-    );
   }
 
   @override
@@ -62,7 +50,6 @@ class HomeScreen extends ConsumerWidget {
               child: QuoteCard(
                 key: ValueKey(quote.id),
                 quote: quote,
-                onCopy: () => _copy(context, quote),
                 onNewQuote: () =>
                     ref.read(featuredQuoteProvider.notifier).next(),
               ),

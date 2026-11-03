@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../models/quote.dart';
+import '../favorites/favorites_providers.dart';
 import 'quote_actions.dart';
 import 'quote_providers.dart';
 
@@ -34,15 +35,18 @@ class QuoteDetailScreen extends ConsumerWidget {
   }
 }
 
-class _DetailBody extends StatelessWidget {
+class _DetailBody extends ConsumerWidget {
   const _DetailBody({required this.quote});
 
   final Quote quote;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final isFavorite = ref.watch(
+      favoritesProvider.select((ids) => ids.contains(quote.id)),
+    );
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -96,10 +100,29 @@ class _DetailBody extends StatelessWidget {
         _InfoRow(label: 'Source', value: quote.source),
         _InfoRow(label: 'License', value: quote.license),
         const SizedBox(height: 24),
-        FilledButton.icon(
-          onPressed: () => copyQuote(context, quote),
-          icon: const Icon(Icons.copy_outlined),
-          label: const Text('Copy quote'),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            FilledButton.tonalIcon(
+              onPressed: () =>
+                  ref.read(favoritesProvider.notifier).toggle(quote.id),
+              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+              label: Text(
+                isFavorite ? 'Saved to favorites' : 'Save to favorites',
+              ),
+            ),
+            FilledButton.icon(
+              onPressed: () => copyQuote(context, quote),
+              icon: const Icon(Icons.copy_outlined),
+              label: const Text('Copy quote'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => shareQuote(context, ref, quote),
+              icon: const Icon(Icons.share_outlined),
+              label: const Text('Share'),
+            ),
+          ],
         ),
       ],
     );

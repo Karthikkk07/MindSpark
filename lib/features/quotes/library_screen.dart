@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../core/router/app_routes.dart';
-import '../../core/theme/app_theme.dart';
-import '../../models/quote.dart';
 import '../../models/quote_category.dart';
 import 'library_providers.dart';
 import 'library_query.dart';
 import 'quote_providers.dart';
+import 'widgets/quote_tile.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -144,7 +141,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                         itemCount: quotes.length,
                         itemBuilder: (context, index) =>
-                            _QuoteTile(quote: quotes[index]),
+                            QuoteTile(quote: quotes[index]),
                       ),
                     ),
                   ],
@@ -153,49 +150,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _QuoteTile extends StatelessWidget {
-  const _QuoteTile({required this.quote});
-
-  final Quote quote;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      color: theme.colorScheme.surfaceContainerHighest,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: InkWell(
-        onTap: () => context.push(AppRoutes.quotePath(quote.id)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                quote.text,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: AppTheme.quoteStyle(context).copyWith(fontSize: 18),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${quote.author} - ${quote.categoryLabel}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../models/quote.dart';
+import '../../quotes/quote_action_bar.dart';
 
 /// The main quote card on Home.
 class QuoteCard extends StatelessWidget {
   const QuoteCard({
     super.key,
     required this.quote,
-    required this.onCopy,
     required this.onNewQuote,
   });
 
   final Quote quote;
-  final VoidCallback onCopy;
   final VoidCallback onNewQuote;
 
   @override
@@ -55,15 +54,12 @@ class QuoteCard extends StatelessWidget {
             const SizedBox(height: 8),
             Chip(label: Text(quote.categoryLabel)),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              runSpacing: 4,
               children: [
-                IconButton(
-                  tooltip: 'Copy quote',
-                  icon: const Icon(Icons.copy_outlined),
-                  color: scheme.onPrimaryContainer,
-                  onPressed: onCopy,
-                ),
-                const Spacer(),
+                QuoteActionBar(quote: quote, color: scheme.onPrimaryContainer),
                 FilledButton.icon(
                   onPressed: onNewQuote,
                   icon: const Icon(Icons.refresh),
