@@ -8,8 +8,9 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.karthik.mindspark/share")
+        MethodChannel(messenger, "com.karthik.mindspark/share")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "shareText" -> {
@@ -22,6 +23,23 @@ class MainActivity : FlutterActivity() {
                                 putExtra(Intent.EXTRA_TEXT, text)
                             }
                             startActivity(Intent.createChooser(send, "Share quote"))
+                            result.success(null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(messenger, "com.karthik.mindspark/widget")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "updateQuotes" -> {
+                        val json = call.argument<String>("quotes")
+                        if (json == null) {
+                            result.error("invalid_quotes", "No quotes provided", null)
+                        } else {
+                            WidgetStore.saveQuotes(applicationContext, json)
+                            QuoteWidgetProvider.refreshAll(applicationContext)
                             result.success(null)
                         }
                     }

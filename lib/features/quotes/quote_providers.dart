@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/prefs/user_prefs_controller.dart';
 import '../../models/quote.dart';
 import '../../repositories/quote_repository.dart';
+import 'quote_pool.dart';
 
 final quoteRepositoryProvider = Provider<QuoteRepository>(
   (ref) => AssetQuoteRepository(),
@@ -32,14 +33,8 @@ class FeaturedQuoteController extends AsyncNotifier<Quote> {
     state = AsyncData(_pick(_pool(quotes), excludeId: state.value?.id));
   }
 
-  /// Quotes in the user's interests, or all quotes if none match.
-  List<Quote> _pool(List<Quote> all) {
-    final interests = ref.read(userPrefsProvider).interests;
-    if (interests.isEmpty) return all;
-    final filtered =
-        all.where((quote) => interests.contains(quote.category)).toList();
-    return filtered.isEmpty ? all : filtered;
-  }
+  List<Quote> _pool(List<Quote> all) =>
+      quotesForInterests(all, ref.read(userPrefsProvider).interests);
 
   Quote _pick(List<Quote> quotes, {required String? excludeId}) {
     if (quotes.isEmpty) throw StateError('No quotes available');
