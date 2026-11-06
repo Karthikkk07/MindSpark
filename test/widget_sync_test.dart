@@ -39,7 +39,7 @@ class _FakeWidgetService implements WidgetService {
   }
 }
 
-Future<ProviderContainer> _makeContainer(
+Future<ProviderContainer> __makeContainer(
   _FakeWidgetService widget, {
   Set<String> interests = const {},
 }) async {
@@ -76,7 +76,7 @@ void main() {
   group('widget sync', () {
     test('pushes the quotes for the chosen interests', () async {
       final widget = _FakeWidgetService();
-      final container = await _makeContainer(widget, interests: {'coding'});
+      final container = await __makeContainer(widget, interests: {'coding'});
 
       await container.read(widgetSyncProvider.future);
 
@@ -85,7 +85,7 @@ void main() {
 
     test('pushes everything when there are no interests', () async {
       final widget = _FakeWidgetService();
-      final container = await _makeContainer(widget);
+      final container = await __makeContainer(widget);
 
       await container.read(widgetSyncProvider.future);
 
@@ -94,7 +94,7 @@ void main() {
 
     test('pushes again when the interests change', () async {
       final widget = _FakeWidgetService();
-      final container = await _makeContainer(widget);
+      final container = await __makeContainer(widget);
       await container.read(widgetSyncProvider.future);
 
       await container.read(userPrefsProvider.notifier).toggleInterest('study');
