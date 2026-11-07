@@ -89,6 +89,7 @@ async function getQuote(req, res) {
 }
 
 module.exports = {
+  toPublic,
   listQuotes,
   listByCategory,
   randomQuote,

@@ -9,13 +9,21 @@ const mongoose = require('mongoose');
 
 const { loadEnv } = require('./config/env');
 const { createLogger } = require('./utils/logger');
+const { createAuthService } = require('./services/authService');
 const quotesRouter = require('./routes/quotes');
+const createAuthRouter = require('./routes/auth');
+const createUsersRouter = require('./routes/users');
+const createFavoritesRouter = require('./routes/favorites');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 /** Builds the Express app. It does not listen or connect to the database. */
 function createApp(overrides = {}) {
   const env = { ...loadEnv(), ...overrides };
+  if (!env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not set (at least 32 characters, see .env.example)');
+  }
   const logger = createLogger(env.LOG_LEVEL);
+  const auth = createAuthService(env);
   const app = express();
 
   app.use(pinoHttp({ logger }));
@@ -27,21 +35,17 @@ function createApp(overrides = {}) {
   }
   app.use(express.json({ limit: '10kb' }));
 
-  app.use(
-    '/api',
+  const limiter = (limit, message) =>
     rateLimit({
       windowMs: 15 * 60 * 1000,
-      limit: env.RATE_LIMIT_MAX,
+      limit,
       standardHeaders: 'draft-7',
       legacyHeaders: false,
-      message: {
-        error: {
-          code: 'rate_limited',
-          message: 'Too many requests, please try again later',
-        },
-      },
-    }),
-  );
+      message: { error: { code: 'rate_limited', message } },
+    });
+
+  app.use('/api', limiter(env.RATE_LIMIT_MAX, 'Too many requests, please try again later'));
+  const authLimiter = limiter(env.AUTH_RATE_LIMIT_MAX, 'Too many attempts, please try again later');
 
   app.get('/api/health', (_req, res) => {
     res.json({
@@ -51,6 +55,9 @@ function createApp(overrides = {}) {
     });
   });
   app.use('/api/quotes', quotesRouter);
+  app.use('/api/auth', createAuthRouter(auth, authLimiter));
+  app.use('/api/users', createUsersRouter(auth));
+  app.use('/api/favorites', createFavoritesRouter(auth));
 
   app.use(notFound);
   app.use(errorHandler);
