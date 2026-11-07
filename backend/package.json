@@ -23,7 +23,7 @@
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.3",
     "helmet": "^8.3.0",
-    "mongoose": "^9.11.4",
+    "mongoose": "^8.24.8",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
     "zod": "^4.6.7"
@@ -36,5 +36,6 @@
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 120000
-  }
+  },
+  "config": {}
 }
