@@ -6,6 +6,7 @@ import 'library_providers.dart';
 import 'library_query.dart';
 import 'quote_providers.dart';
 import 'widgets/quote_tile.dart';
+import 'widgets/quote_tile.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
