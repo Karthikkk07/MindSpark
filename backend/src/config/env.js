@@ -15,10 +15,6 @@ const schema = z.object({
     .default('info'),
   CORS_ORIGIN: z.string().optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(100),
-  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(20),
-  JWT_SECRET: z.string().min(32, 'must be at least 32 characters').optional(),
-  JWT_EXPIRES_IN: z.string().min(1).default('7d'),
-  BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
 });
 
 /** Validates configuration and fails fast with a clear message. */

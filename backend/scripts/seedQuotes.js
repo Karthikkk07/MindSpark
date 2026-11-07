@@ -1,8 +1,4 @@
-
 'use strict';
-
-const dns = require('node:dns');
-dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 // Loads assets/data/quotes.json into MongoDB. Safe to run repeatedly.
 const fs = require('node:fs');
@@ -49,16 +45,9 @@ async function main() {
   );
   await mongoose.disconnect();
 }
+
 main().catch(async (err) => {
-  console.error('MAIN ERROR:', err.message);
-
-  if (err.reason?.servers) {
-    for (const [address, server] of err.reason.servers) {
-      console.log('\nSERVER:', address);
-      console.log('ERROR:', server.error?.message);
-    }
-  }
-
+  console.error(err.message);
   await mongoose.disconnect();
   process.exit(1);
 });
