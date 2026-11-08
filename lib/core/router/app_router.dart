@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/auth_screen.dart';
 import '../../features/favorites/favorites_screen.dart';
 import '../../features/goals/goals_screen.dart';
 import '../../features/home/home_screen.dart';
@@ -17,8 +18,11 @@ GoRouter createRouter({required bool Function() onboardingComplete}) {
     initialLocation:
         onboardingComplete() ? AppRoutes.home : AppRoutes.onboarding,
     redirect: (context, state) {
+      final location = state.matchedLocation;
+      // New users start with onboarding, which may lead to the sign-in screen.
       if (!onboardingComplete() &&
-          state.matchedLocation != AppRoutes.onboarding) {
+          location != AppRoutes.onboarding &&
+          location != AppRoutes.auth) {
         return AppRoutes.onboarding;
       }
       return null;
@@ -66,6 +70,10 @@ GoRouter createRouter({required bool Function() onboardingComplete}) {
       GoRoute(
         path: AppRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.auth,
+        builder: (context, state) => const AuthScreen(),
       ),
     ],
   );

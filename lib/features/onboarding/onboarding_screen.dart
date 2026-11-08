@@ -248,7 +248,7 @@ class _StartPage extends StatelessWidget {
       icon: Icons.rocket_launch_outlined,
       title: 'How would you like to start?',
       subtitle: 'You can use MindSpark right away as a guest. Accounts, for '
-          'syncing across devices, arrive in a later update.',
+          'syncing across devices, are optional.',
       child: Column(
         children: [
           SizedBox(
@@ -259,11 +259,11 @@ class _StartPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const SizedBox(
+          SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: null,
-              child: Text('Create an account (coming soon)'),
+              onPressed: () => context.push(AppRoutes.auth),
+              child: const Text('Sign in or create an account'),
             ),
           ),
         ],

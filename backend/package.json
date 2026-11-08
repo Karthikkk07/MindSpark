@@ -7,7 +7,8 @@
     "test": "jest --runInBand",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "seed": "node scripts/seedQuotes.js"
+    "seed": "node scripts/seedQuotes.js",
+    "dev:local": "node scripts/devLocal.js"
   },
   "keywords": [],
   "author": "",
