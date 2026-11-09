@@ -38,7 +38,7 @@ dependencies:
   go_router: ^17.5.0
   shared_preferences: ^2.5.6
   http: ^1.6.0
-  flutter_secure_storage: ^11.2.0
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:
@@ -95,3 +95,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Workaround: newer path_provider_foundation pulls in objective_c, whose native-asset
+# build fails when the Flutter SDK or pub cache path contains a space.
+dependency_overrides:
+  path_provider_foundation: 2.4.1

@@ -34,7 +34,7 @@ async function main() {
   );
 
   const port = Number(process.env.PORT) || 3000;
-  const app = createApp({ LOG_LEVEL: 'info', RATE_LIMIT_MAX: 1000, AUTH_RATE_LIMIT_MAX: 100 });
+  const app = createApp({ LOG_LEVEL: 'warn', RATE_LIMIT_MAX: 1000, AUTH_RATE_LIMIT_MAX: 100 });
   const server = app.listen(port, () => {
     console.log(`Local API on http://localhost:${port}/api (in-memory database, ${quotes.length} quotes)`);
   });

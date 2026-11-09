@@ -92,7 +92,7 @@ class _FakeAuthRepository implements AuthRepository {
   }
 }
 
-ProviderContainer makeContainer({
+ProviderContainer _makeContainer({
   _MemoryTokenStore? store,
   _FakeAuthRepository? repo,
 }) {
@@ -104,7 +104,7 @@ ProviderContainer makeContainer({
   return container;
 }
 
-Future<SharedPreferences> pumpApp(
+Future<SharedPreferences> _pumpApp(
   WidgetTester tester, {
   _MemoryTokenStore? store,
   _FakeAuthRepository? repo,
@@ -228,13 +228,13 @@ void main() {
 
   group('AuthController', () {
     test('starts signed out', () async {
-      final container = makeContainer();
+      final container = _makeContainer();
       expect(await container.read(authControllerProvider.future), isNull);
     });
 
     test('login keeps the session in memory and in storage', () async {
       final store = _MemoryTokenStore();
-      final container = makeContainer(store: store);
+      final container = _makeContainer(store: store);
       await container.read(authControllerProvider.future);
 
       await container
@@ -247,7 +247,7 @@ void main() {
 
     test('register keeps the session', () async {
       final repo = _FakeAuthRepository();
-      final container = makeContainer(repo: repo);
+      final container = _makeContainer(repo: repo);
       await container.read(authControllerProvider.future);
 
       await container.read(authControllerProvider.notifier).register(
@@ -261,14 +261,14 @@ void main() {
     });
 
     test('a stored session is restored on startup', () async {
-      final container = makeContainer(store: _MemoryTokenStore(_session));
+      final container = _makeContainer(store: _MemoryTokenStore(_session));
       final session = await container.read(authControllerProvider.future);
       expect(session?.token, 'tok');
     });
 
     test('a failed login throws and leaves the user signed out', () async {
       final store = _MemoryTokenStore();
-      final container = makeContainer(
+      final container = _makeContainer(
         store: store,
         repo: _FakeAuthRepository(
           error: const ApiException(
@@ -293,7 +293,7 @@ void main() {
 
     test('sign out clears the session', () async {
       final store = _MemoryTokenStore(_session);
-      final container = makeContainer(store: store);
+      final container = _makeContainer(store: store);
       await container.read(authControllerProvider.future);
 
       await container.read(authControllerProvider.notifier).signOut();
@@ -304,7 +304,7 @@ void main() {
 
     test('a rejected token signs the user out after startup', () async {
       final store = _MemoryTokenStore(_session);
-      final container = makeContainer(
+      final container = _makeContainer(
         store: store,
         repo: _FakeAuthRepository(
           meError: const ApiException(
@@ -324,7 +324,7 @@ void main() {
 
     test('being offline at startup keeps the user signed in', () async {
       final store = _MemoryTokenStore(_session);
-      final container = makeContainer(
+      final container = _makeContainer(
         store: store,
         repo: _FakeAuthRepository(
           meError: const ApiException(code: 'network', message: 'offline'),
@@ -341,7 +341,7 @@ void main() {
 
   group('account screens', () {
     testWidgets('Settings offers sign in to guests', (tester) async {
-      await pumpApp(tester);
+      await _pumpApp(tester);
 
       await tester.tap(find.byTooltip('Settings'));
       await tester.pumpAndSettle();
@@ -356,7 +356,7 @@ void main() {
     testWidgets('sign in checks the input before calling the server',
         (tester) async {
       final repo = _FakeAuthRepository();
-      await pumpApp(tester, repo: repo);
+      await _pumpApp(tester, repo: repo);
       await openAuthFromSettings(tester);
 
       await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
@@ -370,7 +370,7 @@ void main() {
     testWidgets('signing in reaches Home and shows the account in Settings',
         (tester) async {
       final repo = _FakeAuthRepository();
-      await pumpApp(tester, repo: repo);
+      await _pumpApp(tester, repo: repo);
       await openAuthFromSettings(tester);
 
       await fillSignIn(tester);
@@ -387,7 +387,7 @@ void main() {
     });
 
     testWidgets('a failed sign in shows the server message', (tester) async {
-      await pumpApp(
+      await _pumpApp(
         tester,
         repo: _FakeAuthRepository(
           error: const ApiException(
@@ -410,7 +410,7 @@ void main() {
     testWidgets('creating an account needs a name and a longer password',
         (tester) async {
       final repo = _FakeAuthRepository();
-      await pumpApp(tester, repo: repo);
+      await _pumpApp(tester, repo: repo);
       await openAuthFromSettings(tester);
 
       await tester.tap(find.text('New here? Create an account'));
@@ -439,7 +439,7 @@ void main() {
 
     testWidgets('sign out returns to guest mode', (tester) async {
       final store = _MemoryTokenStore(_session);
-      await pumpApp(tester, store: store);
+      await _pumpApp(tester, store: store);
 
       await tester.tap(find.byTooltip('Settings'));
       await tester.pumpAndSettle();
@@ -452,7 +452,7 @@ void main() {
 
     testWidgets('onboarding can lead to sign in and then finishes',
         (tester) async {
-      final prefs = await pumpApp(tester, initial: {});
+      final prefs = await _pumpApp(tester, initial: {});
 
       for (var i = 0; i < 4; i++) {
         await tester.tap(find.text('Next'));
