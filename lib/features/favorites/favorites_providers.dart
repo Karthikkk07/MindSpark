@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/prefs/user_prefs_controller.dart';
 import '../../models/quote.dart';
 import '../../repositories/favorites_repository.dart';
 import '../quotes/quote_providers.dart';
+import '../sync/sync_controller.dart';
 
 final favoritesRepositoryProvider = Provider<FavoritesRepository>(
   (ref) => FavoritesRepository(ref.watch(sharedPreferencesProvider)),
@@ -16,9 +19,20 @@ class FavoritesController extends Notifier<List<String>> {
 
   Future<void> toggle(String quoteId) async {
     final next = [...state];
-    if (!next.remove(quoteId)) next.insert(0, quoteId);
+    final added = !next.remove(quoteId);
+    if (added) next.insert(0, quoteId);
     state = next;
     await ref.read(favoritesRepositoryProvider).save(next);
+    // Signed-in users: mirror the change to the account (queued if offline).
+    unawaited(
+      ref.read(syncControllerProvider.notifier).pushFavorite(quoteId, added: added),
+    );
+  }
+
+  /// Replaces the list with the account's list. Used by sync; does not push.
+  Future<void> replaceAll(List<String> ids) async {
+    state = [...ids];
+    await ref.read(favoritesRepositoryProvider).save(state);
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/widgets/theme_mode_selector.dart';
 import '../auth/auth_controller.dart';
+import '../sync/sync_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -34,6 +35,22 @@ class SettingsScreen extends StatelessWidget {
 class _AccountSection extends ConsumerWidget {
   const _AccountSection();
 
+  static String _syncLabel(BuildContext context, SyncStatus sync) {
+    switch (sync.phase) {
+      case SyncPhase.syncing:
+        return 'Syncing...';
+      case SyncPhase.failed:
+        return sync.message ?? 'Sync failed. Try again later.';
+      case SyncPhase.synced:
+        final at = sync.lastSyncedAt;
+        return at == null
+            ? 'Synced'
+            : 'Synced at ${TimeOfDay.fromDateTime(at).format(context)}';
+      case SyncPhase.idle:
+        return 'Not synced yet';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -58,20 +75,40 @@ class _AccountSection extends ConsumerWidget {
       );
     }
 
+    final sync = ref.watch(syncControllerProvider);
     final name = session.user.name;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: CircleAvatar(child: Text(name.isEmpty ? '?' : name[0].toUpperCase())),
+          leading: CircleAvatar(
+            child: Text(name.isEmpty ? '?' : name[0].toUpperCase()),
+          ),
           title: Text(name),
           subtitle: Text(session.user.email),
         ),
+        Text(
+          _syncLabel(context, sync),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
-          child: const Text('Sign out'),
+        Wrap(
+          spacing: 8,
+          children: [
+            OutlinedButton(
+              onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+              child: const Text('Sign out'),
+            ),
+            TextButton(
+              onPressed: sync.phase == SyncPhase.syncing
+                  ? null
+                  : () => ref.read(syncControllerProvider.notifier).syncNow(),
+              child: const Text('Sync now'),
+            ),
+          ],
         ),
       ],
     );

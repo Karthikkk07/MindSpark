@@ -199,8 +199,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Syncing your favorites and settings across devices is coming in '
-            'the next update.',
+            'Your favorites and settings sync with your account. Favorites saved on this device are merged in when you sign in.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,

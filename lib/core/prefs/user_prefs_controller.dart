@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/sync/sync_controller.dart';
 import '../../models/user_prefs.dart';
 import '../../repositories/prefs_repository.dart';
 
@@ -22,8 +25,21 @@ class UserPrefsController extends Notifier<UserPrefs> {
   UserPrefs build() => ref.watch(prefsRepositoryProvider).load();
 
   Future<void> _update(UserPrefs next) async {
+    final previous = state;
     state = next;
     await ref.read(prefsRepositoryProvider).save(next);
+    if (_syncedFieldsChanged(previous, next)) {
+      // Signed-in users: send the change to the account (kept if offline).
+      unawaited(ref.read(syncControllerProvider.notifier).onPrefsChanged());
+    }
+  }
+
+  static bool _syncedFieldsChanged(UserPrefs a, UserPrefs b) {
+    return !setEquals(a.interests, b.interests) ||
+        a.themeMode != b.themeMode ||
+        a.reminderEnabled != b.reminderEnabled ||
+        a.reminderHour != b.reminderHour ||
+        a.reminderMinute != b.reminderMinute;
   }
 
   Future<void> setThemeMode(ThemeMode mode) =>
@@ -44,6 +60,19 @@ class UserPrefsController extends Notifier<UserPrefs> {
 
   Future<void> completeOnboarding() =>
       _update(state.copyWith(onboardingComplete: true));
+
+  /// Applies the account's settings. Used by sync; does not push back.
+  Future<void> applyRemote(UserPrefs remote) async {
+    final next = state.copyWith(
+      interests: remote.interests,
+      themeMode: remote.themeMode,
+      reminderEnabled: remote.reminderEnabled,
+      reminderHour: remote.reminderHour,
+      reminderMinute: remote.reminderMinute,
+    );
+    state = next;
+    await ref.read(prefsRepositoryProvider).save(next);
+  }
 }
 
 final userPrefsProvider =

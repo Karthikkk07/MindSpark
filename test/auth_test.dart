@@ -12,11 +12,14 @@ import 'package:mindspark/features/auth/auth_controller.dart';
 import 'package:mindspark/features/auth/auth_models.dart';
 import 'package:mindspark/features/auth/auth_repository.dart';
 import 'package:mindspark/features/auth/token_store.dart';
+import 'package:mindspark/features/sync/account_api.dart';
 import 'package:mindspark/features/quotes/quote_providers.dart';
 import 'package:mindspark/models/quote.dart';
 import 'package:mindspark/repositories/prefs_repository.dart';
 import 'package:mindspark/repositories/quote_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/fakes.dart' show FakeAccountApi;
 
 const _user = AuthUser(id: 'u1', name: 'Ann', email: 'ann@example.com');
 const _session = AuthSession(token: 'tok', user: _user);
@@ -99,6 +102,7 @@ ProviderContainer __makeContainer({
   final container = ProviderContainer(overrides: [
     tokenStoreProvider.overrideWithValue(store ?? _MemoryTokenStore()),
     authRepositoryProvider.overrideWithValue(repo ?? _FakeAuthRepository()),
+        accountApiProvider.overrideWithValue(FakeAccountApi()),
   ]);
   addTearDown(container.dispose);
   return container;
@@ -125,6 +129,7 @@ Future<SharedPreferences> __pumpApp(
         quoteRepositoryProvider.overrideWithValue(_FakeQuoteRepository()),
         tokenStoreProvider.overrideWithValue(store ?? _MemoryTokenStore()),
         authRepositoryProvider.overrideWithValue(repo ?? _FakeAuthRepository()),
+        accountApiProvider.overrideWithValue(FakeAccountApi()),
       ],
       child: const MindSparkApp(),
     ),
