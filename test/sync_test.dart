@@ -43,7 +43,7 @@ class _FakeQuoteRepository implements QuoteRepository {
   Future<List<Quote>> loadAll() async => const [_quote];
 }
 
-List<Override> _overrides(
+ dynamic _overrides(
   SharedPreferences prefs,
   FakeAccountApi api, {
   required bool signedIn,
