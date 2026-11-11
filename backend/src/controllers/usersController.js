@@ -2,6 +2,7 @@
 
 const User = require('../models/User');
 const Favorite = require('../models/Favorite');
+const Goal = require('../models/Goal');
 const AppError = require('../utils/AppError');
 const { parse } = require('../middleware/validate');
 const validators = require('../validators/userValidators');
@@ -33,6 +34,7 @@ async function updatePreferences(req, res) {
 /** Deletes the account and everything stored for it. */
 async function deleteAccount(req, res) {
   await Favorite.deleteMany({ user: req.userId });
+  await Goal.deleteMany({ user: req.userId });
   await User.deleteOne({ _id: req.userId });
   res.status(204).end();
 }
