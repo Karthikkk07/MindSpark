@@ -47,7 +47,7 @@ beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
   await mongoose.connect(mongod.getUri());
   await Promise.all([User.init(), Goal.init()]);
-  app = createApp({ LOG_LEVEL: 'silent' });
+  app = createApp({ LOG_LEVEL: 'silent', RATE_LIMIT_MAX: 10000, AUTH_RATE_LIMIT_MAX: 1000 });
 });
 
 afterAll(async () => {
