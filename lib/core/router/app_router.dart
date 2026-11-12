@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/auth_screen.dart';
 import '../../features/favorites/favorites_screen.dart';
+import '../../features/goals/goal_detail_screen.dart';
+import '../../features/goals/goal_edit_screen.dart';
 import '../../features/goals/goals_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -66,6 +68,21 @@ GoRouter createRouter({required bool Function() onboardingComplete}) {
         path: AppRoutes.quoteDetail,
         builder: (context, state) =>
             QuoteDetailScreen(quoteId: state.pathParameters['id']!),
+      ),
+      // The fixed path must come before the :id path.
+      GoRoute(
+        path: AppRoutes.goalNew,
+        builder: (context, state) => const GoalEditScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.goalDetail,
+        builder: (context, state) =>
+            GoalDetailScreen(goalId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoutes.goalEdit,
+        builder: (context, state) =>
+            GoalEditScreen(goalId: state.pathParameters['id']),
       ),
       GoRoute(
         path: AppRoutes.settings,

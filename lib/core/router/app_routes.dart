@@ -10,6 +10,12 @@ class AppRoutes {
   static const settings = '/settings';
   static const auth = '/auth';
   static const quoteDetail = '/quote/:id';
+  static const goalNew = '/goal/new';
+  static const goalDetail = '/goal/:id';
+  static const goalEdit = '/goal/:id/edit';
 
   static String quotePath(String id) => '/quote/${Uri.encodeComponent(id)}';
+  static String goalPath(String id) => '/goal/${Uri.encodeComponent(id)}';
+  static String goalEditPath(String id) =>
+      '/goal/${Uri.encodeComponent(id)}/edit';
 }
