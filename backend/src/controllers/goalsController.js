@@ -42,6 +42,13 @@ function mergeMilestones(existing, incoming) {
   });
 }
 
+/** Changes the status and stamps or clears the completion time. */
+function applyStatus(goal, status, at) {
+  if (status === goal.status) return;
+  goal.status = status;
+  goal.completedAt = status === 'completed' ? at : null;
+}
+
 async function listGoals(req, res) {
   const { status } = parse(validators.listQuery, req.query);
   const today = resolveToday(req.query);
@@ -57,6 +64,7 @@ async function createGoal(req, res) {
   if ((await Goal.countDocuments({ user: req.userId })) >= MAX_GOALS) {
     throw new AppError(409, 'limit_reached', `You can have at most ${MAX_GOALS} goals`);
   }
+  const stamp = body.clientUpdatedAt ? new Date(body.clientUpdatedAt) : new Date();
   const goal = await Goal.create({
     user: req.userId,
     title: body.title,
@@ -64,7 +72,11 @@ async function createGoal(req, res) {
     category: body.category,
     targetDate: body.targetDate ?? null,
     dailyAction: body.dailyAction,
+    status: body.status,
+    completedAt: body.status === 'completed' ? stamp : null,
     milestones: mergeMilestones([], body.milestones),
+    checkIns: [...new Set(body.checkIns)].sort(),
+    clientUpdatedAt: stamp,
   });
   res.status(201).json({ data: toPublicGoal(goal, today) });
 }
@@ -88,13 +100,40 @@ async function updateGoal(req, res) {
     if (body[field] !== undefined) goal[field] = body[field];
   }
   if (body.targetDate !== undefined) goal.targetDate = body.targetDate;
-  if (body.status !== undefined && body.status !== goal.status) {
-    goal.status = body.status;
-    goal.completedAt = body.status === 'completed' ? new Date() : null;
-  }
+  if (body.status !== undefined) applyStatus(goal, body.status, new Date());
   if (body.milestones !== undefined) {
     goal.milestones = mergeMilestones(goal.milestones, body.milestones);
   }
+  goal.clientUpdatedAt = new Date();
+  await goal.save();
+  res.json({ data: toPublicGoal(goal, today) });
+}
+
+/**
+ * Replaces a whole goal (used by sync). A write older than what the server
+ * already holds is refused, so an out-of-date device cannot overwrite it.
+ */
+async function replaceGoal(req, res) {
+  const { id } = parse(validators.idParam, req.params);
+  const body = parse(validators.replaceBody, req.body);
+  const today = resolveToday(req.query);
+  const goal = await Goal.findOne(owned(req, id));
+  if (!goal) throw notFound();
+
+  const stamp = new Date(body.clientUpdatedAt);
+  if (stamp < goal.clientUpdatedAt) {
+    throw new AppError(409, 'stale_write', 'The goal was changed more recently elsewhere');
+  }
+
+  goal.title = body.title;
+  goal.description = body.description;
+  goal.category = body.category;
+  goal.targetDate = body.targetDate ?? null;
+  goal.dailyAction = body.dailyAction;
+  applyStatus(goal, body.status, stamp);
+  goal.milestones = mergeMilestones(goal.milestones, body.milestones);
+  goal.checkIns = [...new Set(body.checkIns)].sort();
+  goal.clientUpdatedAt = stamp;
   await goal.save();
   res.json({ data: toPublicGoal(goal, today) });
 }
@@ -115,7 +154,7 @@ async function addCheckIn(req, res) {
 
   const goal = await Goal.findOneAndUpdate(
     { ...owned(req, id), status: 'active' },
-    { $addToSet: { checkIns: date } },
+    { $addToSet: { checkIns: date }, $set: { clientUpdatedAt: new Date() } },
     { new: true },
   );
   if (!goal) {
@@ -133,7 +172,7 @@ async function removeCheckIn(req, res) {
   const today = resolveToday(req.query);
   const goal = await Goal.findOneAndUpdate(
     owned(req, id),
-    { $pull: { checkIns: date } },
+    { $pull: { checkIns: date }, $set: { clientUpdatedAt: new Date() } },
     { new: true },
   );
   if (!goal) throw notFound();
@@ -145,6 +184,7 @@ module.exports = {
   createGoal,
   getGoal,
   updateGoal,
+  replaceGoal,
   deleteGoal,
   addCheckIn,
   removeCheckIn,

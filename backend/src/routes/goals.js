@@ -10,6 +10,7 @@ module.exports = function createGoalsRouter(auth) {
   router.post('/', controller.createGoal);
   router.get('/:id', controller.getGoal);
   router.patch('/:id', controller.updateGoal);
+  router.put('/:id', controller.replaceGoal);
   router.delete('/:id', controller.deleteGoal);
   router.post('/:id/check-ins', controller.addCheckIn);
   router.delete('/:id/check-ins/:date', controller.removeCheckIn);

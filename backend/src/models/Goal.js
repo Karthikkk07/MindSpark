@@ -24,6 +24,8 @@ const goalSchema = new mongoose.Schema(
     milestones: { type: [milestoneSchema], default: [] },
     // Days the daily action was done, as calendar dates (YYYY-MM-DD).
     checkIns: { type: [String], default: [] },
+    // When the goal was last changed by a client; decides who wins in sync.
+    clientUpdatedAt: { type: Date, default: Date.now },
   },
   { timestamps: true },
 );

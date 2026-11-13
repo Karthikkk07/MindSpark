@@ -28,6 +28,7 @@ function toPublicGoal(goal, today) {
     },
     checkIns,
     streak: { current, longest, checkedInToday: checkIns.includes(today) },
+    clientUpdatedAt: goal.clientUpdatedAt,
     createdAt: goal.createdAt,
     updatedAt: goal.updatedAt,
   };
