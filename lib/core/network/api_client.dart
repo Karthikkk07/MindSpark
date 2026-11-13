@@ -55,6 +55,12 @@ class ApiClient {
   }) =>
       _send('PATCH', path, body: body, token: token);
 
+  Future<Map<String, dynamic>> put(
+    String path, {
+    Map<String, dynamic>? body,
+    String? token,
+  }) =>
+      _send('PUT', path, body: body, token: token);
   Future<Map<String, dynamic>> delete(String path, {String? token}) =>
       _send('DELETE', path, token: token);
   Future<Map<String, dynamic>> _send(

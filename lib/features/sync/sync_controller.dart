@@ -7,6 +7,7 @@ import '../../core/prefs/user_prefs_controller.dart';
 import '../auth/auth_controller.dart';
 import '../favorites/favorites_providers.dart';
 import 'account_api.dart';
+import 'goals_sync.dart';
 import 'sync_state.dart';
 
 enum SyncPhase { idle, syncing, synced, failed }
@@ -26,14 +27,21 @@ class SyncStatus {
 const String _offlineMessage = 'Offline: changes will sync later.';
 const String _expiredMessage = 'Your session expired. Please sign in again.';
 
-/// Keeps favorites and settings in step with the signed-in account.
+/// Keeps favorites, settings and goals in step with the signed-in account.
 class SyncController extends Notifier<SyncStatus> {
   bool _running = false;
+  Timer? _goalsTimer;
 
   @override
-  SyncStatus build() => const SyncStatus();
+  SyncStatus build() {
+    ref.onDispose(() => _goalsTimer?.cancel());
+    return const SyncStatus();
+  }
 
-  void reset() => _set(const SyncStatus());
+  void reset() {
+    _goalsTimer?.cancel();
+    _set(const SyncStatus());
+  }
 
   void _set(SyncStatus status) {
     if (ref.mounted) state = status;
@@ -73,6 +81,45 @@ class SyncController extends Notifier<SyncStatus> {
       }
 
       await store.save(const SyncState());
+
+      // Goals.
+      await syncGoals(ref, session);
+
+      _set(SyncStatus(phase: SyncPhase.synced, lastSyncedAt: DateTime.now()));
+    } on ApiException catch (error) {
+      await _handleFailure(error, lastSynced);
+    } catch (_) {
+      _set(SyncStatus(
+        phase: SyncPhase.failed,
+        lastSyncedAt: lastSynced,
+        message: 'Sync failed. Try again later.',
+      ));
+    } finally {
+      _running = false;
+    }
+  }
+
+  /// Called after a goal changes. Waits a moment so quick edits go together.
+  void goalsChanged() {
+    if (ref.read(currentSessionProvider) == null) return;
+    _goalsTimer?.cancel();
+    _goalsTimer = Timer(const Duration(seconds: 2), () {
+      if (ref.mounted) unawaited(syncGoalsOnly());
+    });
+  }
+
+  /// Syncs only the goals.
+  Future<void> syncGoalsOnly() async {
+    final session = ref.read(currentSessionProvider);
+    if (session == null) return;
+    if (_running) {
+      goalsChanged(); // try again shortly
+      return;
+    }
+    _running = true;
+    final lastSynced = state.lastSyncedAt;
+    try {
+      await syncGoals(ref, session);
       _set(SyncStatus(phase: SyncPhase.synced, lastSyncedAt: DateTime.now()));
     } on ApiException catch (error) {
       await _handleFailure(error, lastSynced);

@@ -21,6 +21,15 @@ class Milestone {
   Map<String, dynamic> toJson() => {'id': id, 'title': title, 'done': done};
 }
 
+List<String> _sortedUnique(Object? value) =>
+    ((value as List<dynamic>?) ?? const []).whereType<String>().toSet().toList()
+      ..sort();
+
+GoalStatus _statusFrom(Object? value) => GoalStatus.values.firstWhere(
+      (status) => status.name == value,
+      orElse: () => GoalStatus.active,
+    );
+
 class Goal {
   const Goal({
     required this.id,
@@ -34,32 +43,54 @@ class Goal {
     this.dailyAction = '',
     this.milestones = const <Milestone>[],
     this.checkIns = const <String>[],
-  });
+    this.remoteId,
+    DateTime? updatedAt,
+    this.dirty = false,
+  }) : updatedAt = updatedAt ?? createdAt;
 
+  /// Reads a goal saved on the device.
   factory Goal.fromJson(Map<String, dynamic> json) {
-    final checkIns = ((json['checkIns'] as List<dynamic>?) ?? const [])
-        .whereType<String>()
-        .toSet()
-        .toList()
-      ..sort();
     return Goal(
       id: json['id'] as String,
       title: json['title'] as String,
       categoryId: json['categoryId'] as String,
       description: json['description'] as String? ?? '',
       targetDate: json['targetDate'] as String?,
-      status: GoalStatus.values.firstWhere(
-        (status) => status.name == json['status'],
-        orElse: () => GoalStatus.active,
-      ),
+      status: _statusFrom(json['status']),
       completedAt: DateTime.tryParse(json['completedAt'] as String? ?? ''),
       dailyAction: json['dailyAction'] as String? ?? '',
       milestones: ((json['milestones'] as List<dynamic>?) ?? const [])
           .map((item) => Milestone.fromJson(item as Map<String, dynamic>))
           .toList(),
-      checkIns: checkIns,
+      checkIns: _sortedUnique(json['checkIns']),
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
+      remoteId: json['remoteId'] as String?,
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? ''),
+      dirty: json['dirty'] as bool? ?? false,
+    );
+  }
+
+  /// Reads a goal returned by the API. The local id is filled in by sync.
+  factory Goal.fromServer(Map<String, dynamic> json) {
+    final created = DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+        DateTime.fromMillisecondsSinceEpoch(0);
+    return Goal(
+      id: '',
+      remoteId: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String? ?? '',
+      categoryId: json['category'] as String,
+      targetDate: json['targetDate'] as String?,
+      status: _statusFrom(json['status']),
+      completedAt: DateTime.tryParse(json['completedAt'] as String? ?? ''),
+      dailyAction: json['dailyAction'] as String? ?? '',
+      milestones: ((json['milestones'] as List<dynamic>?) ?? const [])
+          .map((item) => Milestone.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      checkIns: _sortedUnique(json['checkIns']),
+      createdAt: created,
+      updatedAt: DateTime.tryParse(json['clientUpdatedAt'] as String? ?? ''),
     );
   }
 
@@ -80,6 +111,15 @@ class Goal {
   /// Days the daily action was done (YYYY-MM-DD), oldest first.
   final List<String> checkIns;
   final DateTime createdAt;
+
+  /// The goal's id on the account, once it has been synced.
+  final String? remoteId;
+
+  /// When the goal was last changed (on any device). Decides who wins in sync.
+  final DateTime updatedAt;
+
+  /// True while there are changes the account has not received.
+  final bool dirty;
 
   bool get isActive => status == GoalStatus.active;
 
@@ -106,6 +146,10 @@ class Goal {
     String? dailyAction,
     List<Milestone>? milestones,
     List<String>? checkIns,
+    String? remoteId,
+    bool clearRemoteId = false,
+    DateTime? updatedAt,
+    bool? dirty,
   }) {
     return Goal(
       id: id,
@@ -119,6 +163,28 @@ class Goal {
       milestones: milestones ?? this.milestones,
       checkIns: checkIns ?? this.checkIns,
       createdAt: createdAt,
+      remoteId: clearRemoteId ? null : (remoteId ?? this.remoteId),
+      updatedAt: updatedAt ?? this.updatedAt,
+      dirty: dirty ?? this.dirty,
+    );
+  }
+
+  /// This goal's data under a local identity. Used when pulling from the account.
+  Goal withLocalIdentity({required String id, required DateTime createdAt}) {
+    return Goal(
+      id: id,
+      title: title,
+      description: description,
+      categoryId: categoryId,
+      targetDate: targetDate,
+      status: status,
+      completedAt: completedAt,
+      dailyAction: dailyAction,
+      milestones: milestones,
+      checkIns: checkIns,
+      createdAt: createdAt,
+      remoteId: remoteId,
+      updatedAt: updatedAt,
     );
   }
 
@@ -134,5 +200,8 @@ class Goal {
         'milestones': milestones.map((m) => m.toJson()).toList(),
         'checkIns': checkIns,
         'createdAt': createdAt.toIso8601String(),
+        'remoteId': remoteId,
+        'updatedAt': updatedAt.toIso8601String(),
+        'dirty': dirty,
       };
 }
