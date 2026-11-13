@@ -1,7 +1,7 @@
-/// Calendar-date helpers and streak maths.
-///
-/// Dates are YYYY-MM-DD strings in the user's own time zone, so streaks do
-/// not depend on UTC offsets or daylight saving.
+// Calendar-date helpers and streak maths.
+//
+// Dates are YYYY-MM-DD strings in the user's own time zone, so streaks do
+// not depend on UTC offsets or daylight saving.
 
 const List<String> _monthNames = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

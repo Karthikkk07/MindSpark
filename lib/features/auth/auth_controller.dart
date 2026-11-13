@@ -28,13 +28,15 @@ class AuthController extends AsyncNotifier<AuthSession?> {
   }
 
   Future<void> _verify(AuthSession session) async {
+    if (!ref.mounted) return;
     try {
       await ref.read(authRepositoryProvider).currentUser(session.token);
     } on ApiException catch (error) {
       // Only a rejected token signs the user out; being offline does not.
-      if (error.isUnauthorized) await signOut();
+      if (ref.mounted && error.isUnauthorized) await signOut();
       return;
     }
+    if (!ref.mounted) return;
     await ref.read(syncControllerProvider.notifier).syncNow();
   }
 
@@ -43,8 +45,8 @@ class AuthController extends AsyncNotifier<AuthSession?> {
         .read(authRepositoryProvider)
         .login(email: email, password: password);
     await _save(session);
-    // The account's settings are used; favorites are merged.
-    unawaited(ref.read(syncControllerProvider.notifier).syncNow());
+    // The account's settings are used; favorites and goals are merged.
+    if (ref.mounted) unawaited(ref.read(syncControllerProvider.notifier).syncNow());
   }
 
   Future<void> register({
@@ -56,8 +58,10 @@ class AuthController extends AsyncNotifier<AuthSession?> {
         .read(authRepositoryProvider)
         .register(name: name, email: email, password: password);
     await _save(session);
-    // A new account takes this device's settings; favorites are merged.
-    unawaited(ref.read(syncControllerProvider.notifier).syncNow(pushPrefs: true));
+    // A new account takes this device's settings; favorites and goals merge.
+    if (ref.mounted) {
+      unawaited(ref.read(syncControllerProvider.notifier).syncNow(pushPrefs: true));
+    }
   }
 
   Future<void> signOut() async {
@@ -66,7 +70,9 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     } catch (_) {
       // Nothing more to clear.
     }
+    if (!ref.mounted) return;
     await _resetSyncState();
+    if (!ref.mounted) return;
     state = const AsyncData(null);
   }
 
@@ -76,7 +82,9 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     } catch (_) {
       // Could not persist: the user stays signed in until the app closes.
     }
+    if (!ref.mounted) return;
     await _resetSyncState();
+    if (!ref.mounted) return;
     state = AsyncData(session);
   }
 
@@ -87,6 +95,7 @@ class AuthController extends AsyncNotifier<AuthSession?> {
     } catch (_) {
       // Preferences unavailable: nothing to reset.
     }
+    if (!ref.mounted) return;
     ref.read(syncControllerProvider.notifier).reset();
   }
 }
