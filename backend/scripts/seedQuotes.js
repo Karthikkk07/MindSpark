@@ -1,47 +1,19 @@
 'use strict';
 
 // Loads assets/data/quotes.json into MongoDB. Safe to run repeatedly.
-const fs = require('node:fs');
-const path = require('node:path');
 const mongoose = require('mongoose');
 const { loadEnv } = require('../src/config/env');
 const { connectDb } = require('../src/config/db');
-const Quote = require('../src/models/Quote');
+const { seedQuotes } = require('../src/services/quoteSeed');
 
 async function main() {
   const env = loadEnv();
   if (!env.MONGODB_URI) throw new Error('MONGODB_URI is not set (see .env.example)');
 
-  const file = path.resolve(__dirname, '../../assets/data/quotes.json');
-  const { quotes } = JSON.parse(fs.readFileSync(file, 'utf8'));
-
   await connectDb(env.MONGODB_URI);
-  await Quote.init();
-
-  const operations = quotes.map((quote, index) => ({
-    updateOne: {
-      filter: { quoteId: quote.id },
-      update: {
-        $set: {
-          quoteId: quote.id,
-          text: quote.text,
-          textLength: quote.text.length,
-          author: quote.author,
-          category: quote.category,
-          tags: quote.tags,
-          source: quote.source,
-          license: quote.license,
-          order: index,
-        },
-        $setOnInsert: { status: 'published' },
-      },
-      upsert: true,
-    },
-  }));
-
-  const result = await Quote.bulkWrite(operations);
+  const result = await seedQuotes();
   console.log(
-    `Seed finished: ${result.upsertedCount} inserted, ${result.modifiedCount} updated, ${quotes.length} quotes in the file.`,
+    `Seed finished: ${result.inserted} inserted, ${result.updated} updated, ${result.total} quotes in the file.`,
   );
   await mongoose.disconnect();
 }

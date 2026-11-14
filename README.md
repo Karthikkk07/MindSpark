@@ -66,6 +66,8 @@ flutter run --dart-define=API_BASE_URL=https://your-host.example/api
 
 Plain HTTP is allowed in debug builds only (see `android/app/src/debug/AndroidManifest.xml`).
 
+To deploy the API on Render and MongoDB Atlas, follow [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## API overview
 
 All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman collection is in [docs/postman](docs/postman/MindSpark.postman_collection.json). Submission notes: [SUBMISSION.md](SUBMISSION.md).
@@ -93,6 +95,7 @@ All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman colle
 | `JWT_EXPIRES_IN` | Token lifetime | 7d |
 | `BCRYPT_ROUNDS` | Password hashing cost | 12 |
 | `LOG_LEVEL` | pino level | info |
+| `TRUST_PROXY` | Number of reverse proxies in front of the API (use 1 on Render) | 0 |
 | `GEMINI_API_KEY` | Google Gemini key. Leave empty to switch the AI features off | none |
 | `GEMINI_MODEL` | Gemini model id. If you get a "not found" error, copy a current id from Google AI Studio | gemini-3.1-flash-lite |
 | `AI_DAILY_LIMIT` | AI requests per user per day | 10 |

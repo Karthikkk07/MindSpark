@@ -32,6 +32,9 @@ function createApp(overrides = {}) {
   const generate = aiGenerate || (env.GEMINI_API_KEY ? createGeminiClient(env) : null);
   const ai = createAiService(env, generate, logger);
   const app = express();
+  // Behind a host's proxy the client address comes from X-Forwarded-For;
+  // without this every user would share one rate limit.
+  app.set('trust proxy', env.TRUST_PROXY);
 
   app.use(pinoHttp({ logger }));
   app.use(helmet());

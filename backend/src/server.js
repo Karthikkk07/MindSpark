@@ -5,6 +5,7 @@ const { loadEnv } = require('./config/env');
 const { connectDb } = require('./config/db');
 const { createApp } = require('./app');
 const { createLogger } = require('./utils/logger');
+const { seedQuotesIfEmpty } = require('./services/quoteSeed');
 
 async function main() {
   const env = loadEnv();
@@ -17,6 +18,10 @@ async function main() {
 
   await connectDb(env.MONGODB_URI);
   logger.info('Connected to MongoDB');
+
+  // A new database starts with the app's quotes, so no manual seeding is needed.
+  const seeded = await seedQuotesIfEmpty();
+  if (seeded) logger.info(seeded, 'Loaded the quotes into an empty database');
 
   const server = createApp().listen(env.PORT, () => {
     logger.info({ port: env.PORT }, 'API listening');
