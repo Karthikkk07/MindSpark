@@ -6,7 +6,8 @@ A motivation app for Android: a daily quote on your home screen, a searchable qu
 
 | Home | Library | Goals | Goal detail | Settings |
 |---|---|---|---|---|
-| ![Home](docs/screenshots/home.png) | ![Library](docs/screenshots/library.png) | ![Goals](docs/screenshots/goals.png) | ![Goal detail](docs/screenshots/goal-detail.png) | ![Settings](docs/screenshots/settings.png) |
+| ![Home] (<img width="352" height="745" alt="Screenshot 2026-11-14 193105" src="https://github.com/user-attachments/assets/1f1f6ade-485a-477e-b50d-9a63d2771b1b" />
+) | ![Library](docs/screenshots/library.png) | ![Goals](docs/screenshots/goals.png) | ![Goal detail](docs/screenshots/goal-detail.png) | ![Settings](docs/screenshots/settings.png) |
 
 ## Features
 
