@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/quote_category.dart';
+import '../../repositories/quote_repository.dart';
 import 'library_providers.dart';
 import 'library_query.dart';
 import 'quote_providers.dart';
@@ -16,6 +17,21 @@ class LibraryScreen extends ConsumerStatefulWidget {
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   final TextEditingController _searchController = TextEditingController();
+
+  /// Pull down to fetch the latest quotes from the server.
+  Future<void> _refresh() async {
+    final result = await ref.read(quoteRepositoryProvider).refreshIfSupported();
+    if (result == QuoteRefresh.updated) ref.invalidate(allQuotesProvider);
+    if (!mounted) return;
+    final message = switch (result) {
+      QuoteRefresh.updated => 'Quotes updated from the server.',
+      QuoteRefresh.unchanged => 'You already have the latest quotes.',
+      QuoteRefresh.failed => 'Cannot reach the server. Showing saved quotes.',
+    };
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   void dispose() {
@@ -137,11 +153,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                        itemCount: quotes.length,
-                        itemBuilder: (context, index) =>
-                            QuoteTile(quote: quotes[index]),
+                      child: RefreshIndicator(
+                        onRefresh: _refresh,
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                          itemCount: quotes.length,
+                          itemBuilder: (context, index) =>
+                              QuoteTile(quote: quotes[index]),
+                        ),
                       ),
                     ),
                   ],

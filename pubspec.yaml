@@ -50,6 +50,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -100,3 +101,11 @@ flutter:
 # build fails when the Flutter SDK or pub cache path contains a space.
 dependency_overrides:
   path_provider_foundation: 2.4.1
+
+# App icon. Regenerate with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon/icon.png
+  adaptive_icon_background: "#4F46E5"
+  adaptive_icon_foreground: assets/icon/icon_foreground.png

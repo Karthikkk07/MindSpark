@@ -34,5 +34,15 @@ class Quote {
   final String source;
   final String license;
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'text': text,
+        'author': author,
+        'category': category,
+        'tags': tags,
+        'source': source,
+        'license': license,
+      };
+
   String get categoryLabel => QuoteCategory.fromId(category)?.label ?? category;
 }

@@ -11,7 +11,7 @@ A motivation app for Android: a daily quote on your home screen, a searchable qu
 ## Features
 
 - **Daily quote** on Home, chosen from the interests you pick during onboarding.
-- **Quote library**: search by text, author or tag, category filters, three sort orders, detail view.
+- **Quote library**: loaded from the API and saved on the device (pull down to refresh, bundled quotes as the offline fallback). Search by text, author or tag, category filters, three sort orders, detail view.
 - **Favorites** and **native share**.
 - **Android home-screen widget** (small and medium) with a Next button and a deep link into the app. Works offline from a native cache.
 - **Goals**: a daily action, milestones, a target date, daily check-ins, and current and longest streaks. A check-in yesterday keeps a streak alive.
@@ -68,7 +68,7 @@ Plain HTTP is allowed in debug builds only (see `android/app/src/debug/AndroidMa
 
 ## API overview
 
-All JSON. Protected routes need `Authorization: Bearer <token>`.
+All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman collection is in [docs/postman](docs/postman/MindSpark.postman_collection.json). Submission notes: [SUBMISSION.md](SUBMISSION.md).
 
 | Area | Endpoints |
 |---|---|

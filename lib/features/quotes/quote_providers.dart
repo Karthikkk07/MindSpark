@@ -1,19 +1,39 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/network/api_client.dart';
 import '../../core/prefs/user_prefs_controller.dart';
 import '../../models/quote.dart';
 import '../../repositories/quote_repository.dart';
 import 'quote_pool.dart';
 
+/// Quotes from the API, saved on the device, with the bundled quotes as the
+/// starting point and the offline fallback.
 final quoteRepositoryProvider = Provider<QuoteRepository>(
-  (ref) => AssetQuoteRepository(),
+  (ref) => ApiQuoteRepository(
+    api: ref.watch(apiClientProvider),
+    prefs: ref.watch(sharedPreferencesProvider),
+    fallback: AssetQuoteRepository(),
+  ),
 );
 
 final allQuotesProvider = FutureProvider<List<Quote>>(
   (ref) => ref.watch(quoteRepositoryProvider).loadAll(),
 );
+
+/// Downloads the latest quotes once at start-up and shows them if they changed.
+final quoteRefreshProvider = Provider<void>((ref) {
+  final repo = ref.watch(quoteRepositoryProvider);
+  unawaited(
+    repo.refreshIfSupported().then((result) {
+      if (result == QuoteRefresh.updated && ref.mounted) {
+        ref.invalidate(allQuotesProvider);
+      }
+    }),
+  );
+});
 
 /// The quote shown on Home, favouring the user's interests.
 /// [next] picks a different one.

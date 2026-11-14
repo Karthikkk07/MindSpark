@@ -11,6 +11,7 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/quotes/library_screen.dart';
 import '../../features/quotes/quote_detail_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/splash/splash_screen.dart';
 import '../../features/reminders/reminder_sync.dart';
 import '../prefs/user_prefs_controller.dart';
 import '../shell/main_shell.dart';
@@ -18,12 +19,12 @@ import 'app_routes.dart';
 
 GoRouter createRouter({required bool Function() onboardingComplete}) {
   return GoRouter(
-    initialLocation:
-        onboardingComplete() ? AppRoutes.home : AppRoutes.onboarding,
+    initialLocation: AppRoutes.splash,
     redirect: (context, state) {
       final location = state.matchedLocation;
       // New users start with onboarding, which may lead to the sign-in screen.
       if (!onboardingComplete() &&
+          location != AppRoutes.splash &&
           location != AppRoutes.onboarding &&
           location != AppRoutes.auth) {
         return AppRoutes.onboarding;
@@ -31,6 +32,10 @@ GoRouter createRouter({required bool Function() onboardingComplete}) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingScreen(),
