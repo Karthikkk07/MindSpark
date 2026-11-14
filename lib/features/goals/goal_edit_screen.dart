@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/quote_category.dart';
+import '../ai/ai_api.dart';
+import '../auth/auth_controller.dart';
 import 'goal_models.dart';
 import 'goals_providers.dart';
 import 'streaks.dart';
@@ -39,6 +41,9 @@ class _GoalEditScreenState extends ConsumerState<GoalEditScreen> {
   String? _targetDate;
   bool _missing = false;
   int _idCounter = 0;
+  bool _suggesting = false;
+  GoalSuggestion? _suggestion;
+  String? _suggestError;
 
   @override
   void initState() {
@@ -153,6 +158,133 @@ class _GoalEditScreenState extends ConsumerState<GoalEditScreen> {
     context.pop();
   }
 
+  Future<void> _suggest(String token) async {
+    final title = _title.text.trim();
+    if (title.isEmpty || title.length > 100) {
+      setState(() => _suggestError = 'Enter a title (up to 100 characters) first.');
+      return;
+    }
+    setState(() {
+      _suggesting = true;
+      _suggestError = null;
+      _suggestion = null;
+    });
+    try {
+      final suggestion = await ref.read(aiApiProvider).suggestGoal(
+            token,
+            title: title,
+            description: _description.text.trim(),
+            categoryId: _categoryId,
+          );
+      if (!mounted) return;
+      setState(() {
+        _suggestion = suggestion;
+        _suggesting = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _suggestError = aiErrorMessage(error);
+        _suggesting = false;
+      });
+    }
+  }
+
+  /// Copies the suggestion into the form. Nothing is saved until "Save goal".
+  void _useSuggestion() {
+    final suggestion = _suggestion;
+    if (suggestion == null) return;
+    final known = {
+      for (final draft in _milestones) draft.controller.text.trim().toLowerCase(),
+    };
+    setState(() {
+      _dailyAction.text = suggestion.dailyAction;
+      for (final title in suggestion.milestones) {
+        if (_milestones.length >= _maxMilestones) break;
+        if (!known.add(title.trim().toLowerCase())) continue;
+        _milestones.add(
+          _MilestoneDraft(id: _newMilestoneId(), title: title, done: false),
+        );
+      }
+      _suggestion = null;
+    });
+  }
+
+  Widget _aiSection(ThemeData theme) {
+    final session = ref.watch(currentSessionProvider);
+    if (session == null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text('Sign in for AI suggestions', style: theme.textTheme.bodySmall),
+      );
+    }
+    final suggestion = _suggestion;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            onPressed: _suggesting ? null : () => _suggest(session.token),
+            icon: _suggesting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_awesome),
+            label: const Text('Suggest with AI'),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(aiPrivacyNote, style: theme.textTheme.bodySmall),
+        if (_suggestError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              _suggestError!,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colorScheme.error),
+            ),
+          ),
+        if (suggestion != null)
+          Card(
+            margin: const EdgeInsets.only(top: 12),
+            elevation: 0,
+            color: theme.colorScheme.secondaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Daily action', style: theme.textTheme.titleSmall),
+                  Text(suggestion.dailyAction),
+                  const SizedBox(height: 8),
+                  Text('Milestones', style: theme.textTheme.titleSmall),
+                  for (final title in suggestion.milestones) Text('• $title'),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      FilledButton(
+                        onPressed: _useSuggestion,
+                        child: const Text('Use suggestions'),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () => setState(() => _suggestion = null),
+                        child: const Text('Dismiss'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -182,6 +314,7 @@ class _GoalEditScreenState extends ConsumerState<GoalEditScreen> {
               ),
               validator: _validateTitle,
             ),
+            _aiSection(theme),
             const SizedBox(height: 16),
             TextFormField(
               controller: _description,

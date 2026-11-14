@@ -15,16 +15,22 @@ const createAuthRouter = require('./routes/auth');
 const createUsersRouter = require('./routes/users');
 const createFavoritesRouter = require('./routes/favorites');
 const createGoalsRouter = require('./routes/goals');
+const createAiRouter = require('./routes/ai');
+const { createAiService } = require('./services/aiService');
+const { createGeminiClient } = require('./services/geminiClient');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 /** Builds the Express app. It does not listen or connect to the database. */
 function createApp(overrides = {}) {
-  const env = { ...loadEnv(), ...overrides };
+  const { aiGenerate, ...envOverrides } = overrides;
+  const env = { ...loadEnv(), ...envOverrides };
   if (!env.JWT_SECRET) {
     throw new Error('JWT_SECRET is not set (at least 32 characters, see .env.example)');
   }
   const logger = createLogger(env.LOG_LEVEL);
   const auth = createAuthService(env);
+  const generate = aiGenerate || (env.GEMINI_API_KEY ? createGeminiClient(env) : null);
+  const ai = createAiService(env, generate);
   const app = express();
 
   app.use(pinoHttp({ logger }));
@@ -60,6 +66,7 @@ function createApp(overrides = {}) {
   app.use('/api/users', createUsersRouter(auth));
   app.use('/api/favorites', createFavoritesRouter(auth));
   app.use('/api/goals', createGoalsRouter(auth));
+  app.use('/api/ai', createAiRouter(auth, ai));
 
   app.use(notFound);
   app.use(errorHandler);

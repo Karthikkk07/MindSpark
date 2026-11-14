@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/app_routes.dart';
+import '../ai/encourage_card.dart';
 import 'goal_models.dart';
 import 'goals_providers.dart';
 import 'streaks.dart';
@@ -181,6 +182,10 @@ class GoalDetailScreen extends ConsumerWidget {
               ),
             ),
           ),
+          if (goal.isActive) ...[
+            const SizedBox(height: 16),
+            EncourageCard(goal: goal),
+          ],
           if (goal.milestones.isNotEmpty) ...[
             const SizedBox(height: 24),
             Text(

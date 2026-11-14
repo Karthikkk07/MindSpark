@@ -17,6 +17,7 @@ A motivation app for Android: a daily quote on your home screen, a searchable qu
 - **Goals**: a daily action, milestones, a target date, daily check-ins, and current and longest streaks. A check-in yesterday keeps a streak alive.
 - **Daily reminder**: a notification with a quote at a time you choose, including the Android 13 permission flow.
 - **Accounts** (optional): sign up and sign in, session kept in secure storage. Favorites, settings and goals sync to your account and work offline.
+- **AI goal coach** (signed-in users): "Suggest with AI" proposes a daily action and milestones for a goal, and "Encourage me" writes a short note from a goal's streak and progress. It runs through the backend, so the Gemini key never reaches the phone.
 - Light and dark themes. The app is fully usable as a guest.
 
 ## Tech stack
@@ -77,6 +78,7 @@ All JSON. Protected routes need `Authorization: Bearer <token>`.
 | Account | `GET` and `PATCH /api/users/preferences`, `DELETE /api/users/me` |
 | Favorites | `GET /api/favorites`, `POST /api/favorites/merge`, `POST` and `DELETE /api/favorites/:quoteId` |
 | Goals | `GET` and `POST /api/goals`, `GET`, `PATCH`, `PUT` and `DELETE /api/goals/:id`, `POST /api/goals/:id/check-ins`, `DELETE /api/goals/:id/check-ins/:date` |
+| AI | `POST /api/ai/goal-suggestions`, `POST /api/ai/encouragement` (signed in, limited per user per day) |
 
 ## Configuration (backend)
 
@@ -91,12 +93,17 @@ All JSON. Protected routes need `Authorization: Bearer <token>`.
 | `JWT_EXPIRES_IN` | Token lifetime | 7d |
 | `BCRYPT_ROUNDS` | Password hashing cost | 12 |
 | `LOG_LEVEL` | pino level | info |
+| `GEMINI_API_KEY` | Google Gemini key. Leave empty to switch the AI features off | none |
+| `GEMINI_MODEL` | Gemini model id. If you get a "not found" error, copy a current id from Google AI Studio | gemini-2.5-flash |
+| `AI_DAILY_LIMIT` | AI requests per user per day | 10 |
+| `AI_TIMEOUT_MS` | Time to wait for Gemini | 15000 |
 
 ## Security notes
 
 - Passwords are hashed with bcrypt. The JWT algorithm is pinned (HS256) and tokens are checked against the stored account.
 - Every request body is validated with zod and rejects unknown fields. Every user-owned query is scoped to the signed-in user, and another user's data answers 404.
 - Auth endpoints are rate limited. Security headers come from helmet.
+- AI requests need an account and are limited per user per day (the count is stored in the database). Goal text goes to the model as JSON data, the reply is parsed, cleaned and length-capped on the server, and suggestions only fill editable fields after the user taps "Use suggestions". Upstream errors become generic messages, and prompts and goal text are not logged.
 - The app keeps its session in the Android Keystore through flutter_secure_storage. No secrets are stored in the repository.
 
 ## Limitations
@@ -105,10 +112,11 @@ All JSON. Protected routes need `Authorization: Bearer <token>`.
 - Sync times come from device clocks. The server rejects times far in the future.
 - Reminders use inexact alarms (no special permission), so they can arrive a few minutes late when the phone saves battery.
 - The development database is in memory, so accounts disappear when the dev server stops.
+- Goal text sent to the AI goes to Google Gemini. Free-tier content may be used by Google to improve its products, so check the current terms before putting sensitive text in a goal. The free tier's limits apply to the whole project, so a few users can use them up.
 
 ## Roadmap
 
-Firebase Analytics and Crashlytics, push notifications, an AI goal coach (with the key kept on the server), deployment with MongoDB Atlas, and a signed release build.
+Firebase Analytics and Crashlytics, push notifications, deployment with MongoDB Atlas, and a signed release build.
 
 ## License
 
