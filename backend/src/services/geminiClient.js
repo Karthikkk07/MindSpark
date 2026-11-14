@@ -24,7 +24,7 @@ function createGeminiClient(env, fetchImpl = globalThis.fetch) {
           generationConfig: {
             responseMimeType: 'application/json',
             temperature: 0.7,
-            maxOutputTokens: 1024,
+            maxOutputTokens: 4096,
           },
         }),
         signal: AbortSignal.timeout(env.AI_TIMEOUT_MS),

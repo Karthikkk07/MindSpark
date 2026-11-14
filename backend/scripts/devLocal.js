@@ -12,11 +12,14 @@ const { createApp } = require('../src/app');
 const Quote = require('../src/models/Quote');
 const User = require('../src/models/User');
 const Favorite = require('../src/models/Favorite');
+const Goal = require('../src/models/Goal');
+const AiUsage = require('../src/models/AiUsage');
 
 async function main() {
   const mongod = await MongoMemoryServer.create();
   await mongoose.connect(mongod.getUri());
-  await Promise.all([Quote.init(), User.init(), Favorite.init()]);
+  // The AI daily limit depends on AiUsage's unique index, so build it up front.
+  await Promise.all([Quote.init(), User.init(), Favorite.init(), Goal.init(), AiUsage.init()]);
 
   const file = path.resolve(__dirname, '../../assets/data/quotes.json');
   const { quotes } = JSON.parse(fs.readFileSync(file, 'utf8'));

@@ -20,9 +20,9 @@ const schema = z.object({
   JWT_EXPIRES_IN: z.string().min(1).default('7d'),
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   GEMINI_API_KEY: z.string().min(1).optional(),
-  GEMINI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  GEMINI_MODEL: z.string().min(1).default('gemini-3.1-flash-lite'),
   AI_DAILY_LIMIT: z.coerce.number().int().min(1).default(10),
-  AI_TIMEOUT_MS: z.coerce.number().int().min(1000).default(15000),
+  AI_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000),
 });
 
 /** Validates configuration and fails fast with a clear message. */

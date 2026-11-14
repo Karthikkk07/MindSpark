@@ -66,6 +66,9 @@ abstract class AiApi {
 class ApiAiApi implements AiApi {
   ApiAiApi(this._api);
 
+  /// Longer than normal calls: the model can take a while to answer.
+  static const Duration _timeout = Duration(seconds: 45);
+
   final ApiClient _api;
 
   @override
@@ -83,6 +86,7 @@ class ApiAiApi implements AiApi {
         'category': categoryId,
       },
       token: token,
+      timeout: _timeout,
     );
     return GoalSuggestion.fromJson(json['data'] as Map<String, dynamic>);
   }
@@ -93,6 +97,7 @@ class ApiAiApi implements AiApi {
       '/ai/encouragement',
       body: progress.toJson(),
       token: token,
+      timeout: _timeout,
     );
     final data = json['data'] as Map<String, dynamic>;
     return data['message'] as String? ?? '';

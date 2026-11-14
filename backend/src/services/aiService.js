@@ -12,7 +12,7 @@ const limitReached = (limit) =>
  * AI features with a per-user daily limit. [generate] is
  * async ({ system, user }) => string, or null when AI is switched off.
  */
-function createAiService(env, generate) {
+function createAiService(env, generate, logger) {
   const limit = env.AI_DAILY_LIMIT;
 
   /** Takes one request from today's allowance. Atomic across requests. */
@@ -51,6 +51,8 @@ function createAiService(env, generate) {
       return { data, remaining: Math.max(limit - used, 0) };
     } catch (err) {
       await refund(userId, day);
+      // Only a status or code is logged, never prompts, replies or goal text.
+      if (logger) logger.warn({ status: err && err.status, code: err && err.code }, 'AI request failed');
       throw text.upstreamError(err);
     }
   }

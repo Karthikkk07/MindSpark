@@ -94,9 +94,9 @@ All JSON. Protected routes need `Authorization: Bearer <token>`.
 | `BCRYPT_ROUNDS` | Password hashing cost | 12 |
 | `LOG_LEVEL` | pino level | info |
 | `GEMINI_API_KEY` | Google Gemini key. Leave empty to switch the AI features off | none |
-| `GEMINI_MODEL` | Gemini model id. If you get a "not found" error, copy a current id from Google AI Studio | gemini-2.5-flash |
+| `GEMINI_MODEL` | Gemini model id. If you get a "not found" error, copy a current id from Google AI Studio | gemini-3.1-flash-lite |
 | `AI_DAILY_LIMIT` | AI requests per user per day | 10 |
-| `AI_TIMEOUT_MS` | Time to wait for Gemini | 15000 |
+| `AI_TIMEOUT_MS` | Time to wait for Gemini | 30000 |
 
 ## Security notes
 

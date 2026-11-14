@@ -30,7 +30,7 @@ function createApp(overrides = {}) {
   const logger = createLogger(env.LOG_LEVEL);
   const auth = createAuthService(env);
   const generate = aiGenerate || (env.GEMINI_API_KEY ? createGeminiClient(env) : null);
-  const ai = createAiService(env, generate);
+  const ai = createAiService(env, generate, logger);
   const app = express();
 
   app.use(pinoHttp({ logger }));

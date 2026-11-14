@@ -45,8 +45,9 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     String? token,
+    Duration? timeout,
   }) =>
-      _send('POST', path, body: body, token: token);
+      _send('POST', path, body: body, token: token, timeout: timeout);
 
   Future<Map<String, dynamic>> patch(
     String path, {
@@ -68,6 +69,7 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     String? token,
+    Duration? timeout,
   }) async {
     final request = http.Request(method, Uri.parse('$_baseUrl$path'));
     request.headers['Accept'] = 'application/json';
@@ -79,7 +81,7 @@ class ApiClient {
 
     final http.Response response;
     try {
-      final streamed = await _client.send(request).timeout(_timeout);
+      final streamed = await _client.send(request).timeout(timeout ?? _timeout);
       response = await http.Response.fromStream(streamed);
     } on Exception {
       throw const ApiException(
