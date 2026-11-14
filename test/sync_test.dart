@@ -10,6 +10,7 @@ import 'package:mindspark/features/auth/token_store.dart';
 import 'package:mindspark/features/favorites/favorites_providers.dart';
 import 'package:mindspark/features/quotes/quote_providers.dart';
 import 'package:mindspark/features/sync/account_api.dart';
+import 'package:mindspark/features/sync/goals_sync.dart';
 import 'package:mindspark/features/sync/sync_controller.dart';
 import 'package:mindspark/features/sync/sync_state.dart';
 import 'package:mindspark/models/quote.dart';
@@ -20,6 +21,7 @@ import 'package:mindspark/repositories/quote_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fakes.dart';
+import 'support/goals_fakes.dart';
 
 const _offline = ApiException(code: 'network', message: 'offline');
 const _expired = ApiException(
@@ -58,6 +60,7 @@ class _FakeQuoteRepository implements QuoteRepository {
       FakeAuthRepository(meError: startupSync ? null : _offline),
     ),
     accountApiProvider.overrideWithValue(api),
+    goalsApiProvider.overrideWithValue(FakeGoalsApi()),
     quoteRepositoryProvider.overrideWithValue(_FakeQuoteRepository()),
   ];
 }

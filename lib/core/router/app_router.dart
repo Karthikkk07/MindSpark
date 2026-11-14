@@ -11,6 +11,7 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/quotes/library_screen.dart';
 import '../../features/quotes/quote_detail_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/reminders/reminder_sync.dart';
 import '../prefs/user_prefs_controller.dart';
 import '../shell/main_shell.dart';
 import 'app_routes.dart';
@@ -98,6 +99,8 @@ GoRouter createRouter({required bool Function() onboardingComplete}) {
 
 /// One router per ProviderScope, so tests start from a clean state.
 final routerProvider = Provider<GoRouter>((ref) {
+  // Starting here keeps the daily reminder in step with the settings.
+  ref.read(reminderSyncProvider);
   final router = createRouter(
     onboardingComplete: () => ref.read(userPrefsProvider).onboardingComplete,
   );

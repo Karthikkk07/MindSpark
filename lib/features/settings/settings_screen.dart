@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/prefs/user_prefs_controller.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/widgets/theme_mode_selector.dart';
 import '../auth/auth_controller.dart';
+import '../quotes/quote_providers.dart';
+import '../reminders/reminder_messages.dart';
+import '../reminders/reminder_service.dart';
 import '../sync/sync_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -26,8 +30,145 @@ class SettingsScreen extends StatelessWidget {
           Text('Appearance', style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
           const ThemeModeSelector(),
+          const SizedBox(height: 32),
+          Text('Daily reminder', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 12),
+          const _ReminderSection(),
         ],
       ),
+    );
+  }
+}
+
+class _ReminderSection extends ConsumerStatefulWidget {
+  const _ReminderSection();
+
+  @override
+  ConsumerState<_ReminderSection> createState() => _ReminderSectionState();
+}
+
+class _ReminderSectionState extends ConsumerState<_ReminderSection>
+    with WidgetsBindingObserver {
+  /// Whether notifications can be shown; null until checked.
+  bool? _allowed;
+
+  /// The user tried to switch reminders on but the permission was refused.
+  bool _denied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refresh();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Back from system settings: check again.
+    if (state == AppLifecycleState.resumed) _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final allowed = await ref.read(reminderServiceProvider).notificationsAllowed();
+    if (mounted) setState(() => _allowed = allowed);
+  }
+
+  Future<void> _toggle(bool on) async {
+    final prefsController = ref.read(userPrefsProvider.notifier);
+    if (!on) {
+      setState(() => _denied = false);
+      await prefsController.setReminderEnabled(false);
+      return;
+    }
+    final service = ref.read(reminderServiceProvider);
+    var allowed = await service.notificationsAllowed();
+    if (!allowed) allowed = await service.requestPermission();
+    if (!mounted) return;
+    setState(() {
+      _allowed = allowed;
+      _denied = !allowed;
+    });
+    if (allowed) await prefsController.setReminderEnabled(true);
+  }
+
+  Future<void> _pickTime() async {
+    final prefs = ref.read(userPrefsProvider);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: prefs.reminderHour, minute: prefs.reminderMinute),
+    );
+    if (picked != null) {
+      await ref.read(userPrefsProvider.notifier).setReminderTime(picked);
+    }
+  }
+
+  Future<void> _sendTest() async {
+    final prefs = ref.read(userPrefsProvider);
+    final quotes = ref.read(allQuotesProvider).value ?? const [];
+    final messages = reminderMessages(quotes, prefs.interests);
+    await ref.read(reminderServiceProvider).showNow(
+          messages.isEmpty ? 'Your daily motivation is ready.' : messages.first,
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final prefs = ref.watch(userPrefsProvider);
+    final blocked = _allowed == false && (prefs.reminderEnabled || _denied);
+    final time = TimeOfDay(hour: prefs.reminderHour, minute: prefs.reminderMinute);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Remind me every day'),
+          subtitle: const Text('A motivational quote at the time you choose'),
+          value: prefs.reminderEnabled,
+          onChanged: _toggle,
+        ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          enabled: prefs.reminderEnabled,
+          leading: const Icon(Icons.schedule),
+          title: const Text('Reminder time'),
+          trailing: Text(time.format(context), style: theme.textTheme.titleMedium),
+          onTap: prefs.reminderEnabled ? _pickTime : null,
+        ),
+        if (blocked) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Notifications are blocked for MindSpark, so reminders cannot appear. '
+            'Allow them in system settings.',
+            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+          ),
+          TextButton(
+            onPressed: () => ref.read(reminderServiceProvider).openNotificationSettings(),
+            child: const Text('Open settings'),
+          ),
+        ],
+        if (_allowed == true) ...[
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: _sendTest,
+            child: const Text('Send a test reminder'),
+          ),
+        ],
+        const SizedBox(height: 8),
+        Text(
+          'Reminders can arrive a few minutes late when your phone is saving battery.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
