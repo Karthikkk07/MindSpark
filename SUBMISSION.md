@@ -3,6 +3,7 @@
 Flutter Developer Intern assignment, Sankar Group. MindSpark is a motivation app for Android: a daily quote, a searchable quote library, favorites, goals with daily check-ins and streaks, a daily reminder, an Android home-screen widget, and an optional AI goal coach.
 
 Repository: https://github.com/Karthikkk07/MindSpark
+Live API: https://mindspark-api-xqpn.onrender.com/api (health: `/api/health`)
 
 ## How the assignment is covered
 
@@ -85,5 +86,6 @@ cd backend && npm test
 
 - If the same goal is changed offline on two devices, the later change wins.
 - Reminders use inexact alarms, so they can arrive a few minutes late when the phone saves battery.
-- The development database is in memory. Deploying needs MongoDB Atlas and an API host (planned).
+- The API is live on Render's free tier with MongoDB Atlas (<https://mindspark-api-xqpn.onrender.com/api>). It sleeps after 15 minutes idle, so the first request can take about a minute.
+- The local development database is in memory.
 - Gemini's free tier has small limits, and goal text sent to the AI goes to Google. The app says so next to the AI buttons.

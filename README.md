@@ -66,7 +66,15 @@ flutter run --dart-define=API_BASE_URL=https://your-host.example/api
 
 Plain HTTP is allowed in debug builds only (see `android/app/src/debug/AndroidManifest.xml`).
 
-To deploy the API on Render and MongoDB Atlas, follow [docs/DEPLOY.md](docs/DEPLOY.md).
+The API is deployed on Render (free tier) with MongoDB Atlas: <https://mindspark-api-xqpn.onrender.com/api/health>. After 15 minutes idle the instance sleeps, so the first request can take about a minute. To deploy your own copy, follow [docs/DEPLOY.md](docs/DEPLOY.md).
+
+Release APK, pointed at the live API:
+
+```bash
+flutter build apk --release --dart-define=API_BASE_URL=https://mindspark-api-xqpn.onrender.com/api
+```
+
+Signing reads `android/key.properties` (git-ignored). Without it the release build falls back to the debug key.
 
 ## API overview
 
@@ -119,7 +127,7 @@ All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman colle
 
 ## Roadmap
 
-Firebase Analytics and Crashlytics, push notifications, deployment with MongoDB Atlas, and a signed release build.
+Firebase Analytics and Crashlytics and push notifications.
 
 ## License
 
