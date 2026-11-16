@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { createApp } = require('../src/app');
 const Quote = require('../src/models/Quote');
-const { seedQuotes, seedQuotesIfEmpty } = require('../src/services/quoteSeed');
+const { seedQuotes, seedMissingQuotes } = require('../src/services/quoteSeed');
 
 let mongod;
 
@@ -21,12 +21,17 @@ afterAll(async () => {
 });
 
 describe('quote seeding', () => {
-  test('fills an empty database once and leaves existing quotes alone', async () => {
-    const first = await seedQuotesIfEmpty();
+  test('fills an empty database, tops up a partial one, then leaves it alone', async () => {
+    const first = await seedMissingQuotes();
     expect(first.inserted).toBeGreaterThan(0);
     expect(await Quote.countDocuments()).toBe(first.total);
 
-    expect(await seedQuotesIfEmpty()).toBeNull();
+    expect(await seedMissingQuotes()).toBeNull();
+
+    await Quote.deleteOne({});
+    const topUp = await seedMissingQuotes();
+    expect(topUp.inserted).toBe(1);
+    expect(await Quote.countDocuments()).toBe(first.total);
 
     const again = await seedQuotes();
     expect(again.inserted).toBe(0);

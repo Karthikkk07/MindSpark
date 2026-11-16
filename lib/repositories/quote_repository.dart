@@ -64,8 +64,8 @@ class ApiQuoteRepository implements RefreshableQuoteRepository {
         _fallback = fallback;
 
   static const String cacheKey = 'quotes_cache_v1';
-  static const int _pageSize = 50;
-  static const int _maxPages = 20;
+  static const int _pageSize = 100;
+  static const int _maxPages = 40;
 
   final ApiClient _api;
   final SharedPreferences _prefs;

@@ -105,7 +105,7 @@ describe('GET /api/quotes', () => {
   });
 
   test('rejects invalid parameters with a 400', async () => {
-    for (const query of ['category=nope', 'limit=100', 'page=0', 'sort=random']) {
+    for (const query of ['category=nope', 'limit=101', 'page=0', 'sort=random']) {
       const res = await request(app).get(`/api/quotes?${query}`);
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('validation_error');

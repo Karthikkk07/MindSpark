@@ -40,10 +40,11 @@ async function seedQuotes(file = DEFAULT_FILE) {
   };
 }
 
-/** Seeds an empty database (first start on a new host). Returns null if quotes exist. */
-async function seedQuotesIfEmpty(file) {
-  if ((await Quote.estimatedDocumentCount()) > 0) return null;
+/** Tops up the database when it has fewer quotes than the file (new host or a larger quote set). */
+async function seedMissingQuotes(file = DEFAULT_FILE) {
+  const { quotes } = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if ((await Quote.estimatedDocumentCount()) >= quotes.length) return null;
   return seedQuotes(file);
 }
 
-module.exports = { seedQuotes, seedQuotesIfEmpty };
+module.exports = { seedQuotes, seedMissingQuotes };
