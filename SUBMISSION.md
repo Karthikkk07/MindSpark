@@ -4,6 +4,7 @@ Flutter Developer Intern assignment, Sankar Group. MindSpark is a motivation app
 
 Repository: https://github.com/Karthikkk07/MindSpark
 Live API: https://mindspark-api-xqpn.onrender.com/api (health: `/api/health`)
+Download the Android app: https://github.com/Karthikkk07/MindSpark/releases/download/v1.0.0/MindSpark-1.0.0.apk
 
 ## How the assignment is covered
 
