@@ -48,6 +48,16 @@ function createApp(overrides = {}) {
   }
   app.use(express.json({ limit: '10kb' }));
 
+  // Registered before the rate limiter: the host's health checks and uptime
+  // monitors poll this from one address and must never be answered with 429.
+  app.get('/api/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      db: mongoose.connection.readyState === 1 ? 'up' : 'down',
+      uptimeSeconds: Math.round(process.uptime()),
+    });
+  });
+
   const limiter = (limit, message) =>
     rateLimit({
       windowMs: 15 * 60 * 1000,
@@ -60,13 +70,6 @@ function createApp(overrides = {}) {
   app.use('/api', limiter(env.RATE_LIMIT_MAX, 'Too many requests, please try again later'));
   const authLimiter = limiter(env.AUTH_RATE_LIMIT_MAX, 'Too many attempts, please try again later');
 
-  app.get('/api/health', (_req, res) => {
-    res.json({
-      status: 'ok',
-      db: mongoose.connection.readyState === 1 ? 'up' : 'down',
-      uptimeSeconds: Math.round(process.uptime()),
-    });
-  });
   app.use('/api/quotes', quotesRouter);
   app.use('/api/auth', createAuthRouter(auth, authLimiter));
   app.use('/api/users', createUsersRouter(auth));

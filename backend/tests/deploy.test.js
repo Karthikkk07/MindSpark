@@ -50,7 +50,8 @@ describe('quote seeding', () => {
 });
 
 describe('behind a proxy', () => {
-  const get = (app, ip) => request(app).get('/api/health').set('X-Forwarded-For', ip);
+  const get = (app, ip) =>
+    request(app).get('/api/quotes/categories').set('X-Forwarded-For', ip);
 
   test('with TRUST_PROXY each client address has its own rate limit', async () => {
     const app = createApp({ LOG_LEVEL: 'silent', TRUST_PROXY: 1, RATE_LIMIT_MAX: 2 });
@@ -58,5 +59,13 @@ describe('behind a proxy', () => {
     expect((await get(app, '203.0.113.1')).status).toBe(200);
     expect((await get(app, '203.0.113.1')).status).toBe(429);
     expect((await get(app, '203.0.113.2')).status).toBe(200);
+  });
+
+  test('health checks are never rate limited', async () => {
+    const app = createApp({ LOG_LEVEL: 'silent', TRUST_PROXY: 1, RATE_LIMIT_MAX: 1 });
+    for (let i = 0; i < 5; i += 1) {
+      const res = await request(app).get('/api/health').set('X-Forwarded-For', '203.0.113.9');
+      expect(res.status).toBe(200);
+    }
   });
 });
