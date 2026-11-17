@@ -70,7 +70,7 @@ Plain HTTP is allowed in debug builds only (see `android/app/src/debug/AndroidMa
 
 The API is deployed on Render (free tier) with MongoDB Atlas: <https://mindspark-api-xqpn.onrender.com/api/health>. After 15 minutes idle the instance sleeps, so the first request can take about a minute. To deploy your own copy, follow [docs/DEPLOY.md](docs/DEPLOY.md).
 
-**Download the app:** [MindSpark-1.0.0.apk](https://github.com/Karthikkk07/MindSpark/releases/download/v1.0.0/MindSpark-1.0.0.apk) (Android; allow "Install unknown apps" when asked).
+**Download the app:** [MindSpark-1.1.0.apk](https://github.com/Karthikkk07/MindSpark/releases/download/v1.1.0/MindSpark-1.1.0.apk) (Android; allow "Install unknown apps" when asked). All releases: https://github.com/Karthikkk07/MindSpark/releases
 
 Release APK, pointed at the live API:
 
@@ -82,7 +82,7 @@ Signing reads `android/key.properties` (git-ignored). Without it the release bui
 
 ## API overview
 
-All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman collection is in [docs/postman](docs/postman/MindSpark.postman_collection.json). Submission notes: [SUBMISSION.md](SUBMISSION.md).
+All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman collection is in [docs/postman](docs/postman/MindSpark.postman_collection.json).
 
 | Area | Endpoints |
 |---|---|
@@ -138,6 +138,7 @@ The Firebase config files are private and not in git.
 - If the same goal is changed on two devices while both are offline, the later change wins and the other is lost.
 - Sync times come from device clocks. The server rejects times far in the future.
 - Reminders use inexact alarms (no special permission), so they can arrive a few minutes late when the phone saves battery.
+- Push notifications that arrive while the app is open show as an in-app banner. Delivery to the notification bar while the app is closed is not yet confirmed on every phone (aggressive battery managers, for example OnePlus, can block it).
 - The development database is in memory, so accounts disappear when the dev server stops.
 - Goal text sent to the AI goes to Google Gemini. Free-tier content may be used by Google to improve its products, so check the current terms before putting sensitive text in a goal. The free tier's limits apply to the whole project, so a few users can use them up.
 

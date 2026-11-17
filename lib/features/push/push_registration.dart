@@ -152,14 +152,20 @@ final pushSyncProvider = Provider<void>((ref) {
   // Android only shows pushes in the notification shade while the app is in
   // the background, so a push that arrives now is shown in the app instead.
   final incoming = ref.read(pushMessagingProvider).onForegroundMessage.listen((message) {
+    debugPrint('Push: received while the app is open (${message.title})');
     final text = [message.title, message.body]
         .whereType<String>()
         .where((part) => part.isNotEmpty)
         .join(': ');
     if (text.isEmpty) return;
-    ref.read(rootMessengerKeyProvider).currentState?.showSnackBar(
-          SnackBar(content: Text(text), duration: const Duration(seconds: 6)),
-        );
+    final messenger = ref.read(rootMessengerKeyProvider).currentState;
+    debugPrint('Push: showing banner, messenger ready: ${messenger != null}');
+    // Replaces any message still on screen, so the push is never queued behind it.
+    messenger
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(text), duration: const Duration(seconds: 6)),
+      );
   });
   ref.onDispose(incoming.cancel);
 });
