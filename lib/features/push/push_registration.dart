@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart' show SnackBar, Text;
+import 'package:flutter/material.dart' show SnackBar, Text, debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
@@ -51,7 +51,11 @@ class PushRegistration {
     final session = _ref.read(currentSessionProvider);
     if (session == null) return;
     final token = await _ref.read(pushMessagingProvider).token();
-    if (token != null) await _register(session.token, token);
+    if (token == null) {
+      _setStatus('Firebase did not give this phone a push token.');
+      return;
+    }
+    await _register(session.token, token);
   }
 
   /// Used on sign-out, when the session is already gone.
@@ -74,11 +78,19 @@ class PushRegistration {
   }
 
   Future<void> _register(String authToken, String pushToken) async {
+    final tail = pushToken.substring(pushToken.length - 6);
     try {
       await _ref.read(devicesApiProvider).register(authToken, pushToken);
-    } on ApiException {
-      // Retried later.
+      _setStatus('This phone is registered with the server (token ...$tail).');
+    } on ApiException catch (error) {
+      // Retried at the next start, sign-in or token change.
+      _setStatus('Could not register this phone: ${error.message}');
     }
+  }
+
+  void _setStatus(String text) {
+    debugPrint('Push: $text');
+    if (_ref.mounted) _ref.read(pushStatusProvider.notifier).set(text);
   }
 
   Future<void> _unregister(String authToken, String pushToken) async {
@@ -93,6 +105,16 @@ class PushRegistration {
 final pushRegistrationProvider = Provider<PushRegistration>(
   PushRegistration.new,
 );
+
+/// A short, human-readable line about whether this phone is registered.
+class PushStatus extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? text) => state = text;
+}
+
+final pushStatusProvider = NotifierProvider<PushStatus, String?>(PushStatus.new);
 
 /// Keeps the server's list of devices in step with sign-in, sign-out, the
 /// push switch and Firebase token changes. Started with the router.

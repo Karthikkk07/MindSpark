@@ -110,6 +110,7 @@ class _PushSectionState extends ConsumerState<_PushSection> {
     final theme = Theme.of(context);
     final signedIn = ref.watch(currentSessionProvider) != null;
     final enabled = ref.watch(userPrefsProvider.select((p) => p.pushEnabled));
+    final status = ref.watch(pushStatusProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,6 +132,13 @@ class _PushSectionState extends ConsumerState<_PushSection> {
             style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
           ),
         if (enabled && signedIn) ...[
+          if (status != null)
+            Text(
+              status,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: _sendTest,
