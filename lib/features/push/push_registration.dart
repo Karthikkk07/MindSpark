@@ -64,8 +64,16 @@ class PushRegistration {
     if (token != null) await _unregister(authToken, token);
   }
 
+  /// The last characters of this phone's push token, to compare with the
+  /// server's report.
+  Future<String?> tokenTail() async {
+    final token = await _ref.read(pushMessagingProvider).token();
+    if (token == null) return null;
+    return token.substring(token.length - 6);
+  }
+
   /// Sends a test push to the signed-in account. Null when it could not be sent.
-  Future<int?> sendTest({int delaySeconds = 0}) async {
+  Future<PushTestResult?> sendTest({int delaySeconds = 0}) async {
     final session = _ref.read(currentSessionProvider);
     if (session == null) return null;
     try {

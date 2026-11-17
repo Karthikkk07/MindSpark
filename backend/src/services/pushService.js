@@ -46,11 +46,11 @@ function createPushService(env, logger, messaging = createFirebaseMessaging(env,
   return {
     enabled: Boolean(messaging),
 
-    /** Returns how many devices accepted the message. */
+    /** Returns how many devices accepted the message, and why the others did not. */
     async sendToUser(userId, { title, body }) {
-      if (!messaging) return 0;
+      if (!messaging) return { sent: 0, devices: 0, errors: [] };
       const devices = await DeviceToken.find({ user: userId }).select('token').lean();
-      if (devices.length === 0) return 0;
+      if (devices.length === 0) return { sent: 0, devices: 0, errors: [] };
 
       const tokens = devices.map((device) => device.token);
       const response = await messaging.sendEachForMulticast({
@@ -60,13 +60,15 @@ function createPushService(env, logger, messaging = createFirebaseMessaging(env,
       });
 
       const dead = [];
+      const errors = [];
       response.responses.forEach((result, index) => {
-        if (!result.success && DEAD_TOKEN_CODES.has(result.error?.code)) {
-          dead.push(tokens[index]);
-        }
+        if (result.success) return;
+        const code = result.error?.code || 'unknown';
+        errors.push(`${tokens[index].slice(-6)}: ${code}`);
+        if (DEAD_TOKEN_CODES.has(code)) dead.push(tokens[index]);
       });
       if (dead.length > 0) await DeviceToken.deleteMany({ token: { $in: dead } });
-      return response.successCount;
+      return { sent: response.successCount, devices: tokens.length, errors };
     },
   };
 }

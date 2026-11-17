@@ -48,19 +48,20 @@ function createSendTest(push) {
     }
     const { delaySeconds = 0 } = parse(validators.testBody, req.body ?? {});
     if (delaySeconds === 0) {
-      res.json({ data: { sent: await push.sendToUser(req.userId, message) } });
+      res.json({ data: await push.sendToUser(req.userId, message) });
       return;
     }
 
     const devices = await DeviceToken.countDocuments({ user: req.userId });
     if (devices > 0) {
       setTimeout(() => {
-        push.sendToUser(req.userId, message).catch((error) => {
-          req.log.error({ err: error.message }, 'Delayed test push failed');
-        });
+        push
+          .sendToUser(req.userId, message)
+          .then((result) => req.log.info(result, 'Delayed test push sent'))
+          .catch((error) => req.log.error({ err: error.message }, 'Delayed test push failed'));
       }, delaySeconds * 1000).unref();
     }
-    res.json({ data: { sent: devices, delaySeconds } });
+    res.json({ data: { sent: devices, devices, errors: [], delaySeconds } });
   };
 }
 

@@ -92,17 +92,25 @@ class _PushSectionState extends ConsumerState<_PushSection> {
 
   Future<void> _sendTest({int delaySeconds = 0}) async {
     final messenger = ScaffoldMessenger.of(context);
-    final sent = await ref
-        .read(pushRegistrationProvider)
-        .sendTest(delaySeconds: delaySeconds);
-    final text = switch (sent) {
-      null => 'Could not reach the server. Try again in a moment.',
-      0 => 'No device is registered yet. Try again in a few seconds.',
-      _ when delaySeconds > 0 =>
-        'Push scheduled. Press Home now: it arrives in $delaySeconds seconds.',
-      _ => 'Test push sent. It appears in the app while it is open.',
-    };
-    messenger.showSnackBar(SnackBar(content: Text(text)));
+    final registration = ref.read(pushRegistrationProvider);
+    final result = await registration.sendTest(delaySeconds: delaySeconds);
+    final tail = await registration.tokenTail();
+    final String text;
+    if (result == null) {
+      text = 'Could not reach the server. Try again in a moment.';
+    } else if (result.devices == 0) {
+      text = 'The server has no device registered for this account. '
+          'Switch push off and on again.';
+    } else if (delaySeconds > 0) {
+      text = 'Push scheduled. Press Home now: it arrives in $delaySeconds seconds.';
+    } else {
+      text = 'Sent to ${result.sent} of ${result.devices} device(s). '
+          'This phone: ...${tail ?? '?'}.'
+          '${result.errors.isEmpty ? '' : ' Problems: ${result.errors.join(', ')}'}';
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(text), duration: const Duration(seconds: 8)),
+    );
   }
 
   @override

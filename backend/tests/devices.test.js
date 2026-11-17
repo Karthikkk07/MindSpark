@@ -137,7 +137,7 @@ describe('test push', () => {
       await as(token).post('/api/devices', { token: TOKEN_A });
 
       const res = await as(token).post('/api/devices/test', { delaySeconds: 10 });
-      expect(res.body.data).toEqual({ sent: 1, delaySeconds: 10 });
+      expect(res.body.data).toEqual({ sent: 1, devices: 1, errors: [], delaySeconds: 10 });
       expect(sendEach).not.toHaveBeenCalled();
 
       await jest.advanceTimersByTimeAsync(10_000);
@@ -179,6 +179,8 @@ describe('test push', () => {
 
     const res = await as(token).post('/api/devices/test', {});
     expect(res.body.data.sent).toBe(1);
+    expect(res.body.data.devices).toBe(2);
+    expect(res.body.data.errors).toEqual([`${TOKEN_A.slice(-6)}: messaging/registration-token-not-registered`]);
     expect(await DeviceToken.countDocuments({ token: TOKEN_A })).toBe(0);
     expect(await DeviceToken.countDocuments({ token: TOKEN_B })).toBe(1);
   });

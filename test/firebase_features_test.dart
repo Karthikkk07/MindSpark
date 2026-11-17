@@ -69,9 +69,9 @@ class _FakeDevicesApi implements DevicesApi {
       calls.add('unregister:$authToken:$pushToken');
 
   @override
-  Future<int> sendTest(String authToken, {int delaySeconds = 0}) async {
+  Future<PushTestResult> sendTest(String authToken, {int delaySeconds = 0}) async {
     calls.add('test:$authToken:$delaySeconds');
-    return testResult;
+    return PushTestResult(sent: testResult, devices: testResult);
   }
 }
 
@@ -292,7 +292,7 @@ void main() {
       await tester.pump();
       expect(s.devices.calls, contains('test:tok:0'));
       expect(
-        find.text('Test push sent. It appears in the app while it is open.'),
+        find.text('Sent to 1 of 1 device(s). This phone: ...-token.'),
         findsOneWidget,
       );
 
