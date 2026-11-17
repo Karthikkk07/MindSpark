@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/prefs/user_prefs_controller.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../models/quote.dart';
 import '../../repositories/favorites_repository.dart';
 import '../quotes/quote_providers.dart';
@@ -23,6 +24,7 @@ class FavoritesController extends Notifier<List<String>> {
     if (added) next.insert(0, quoteId);
     state = next;
     await ref.read(favoritesRepositoryProvider).save(next);
+    if (added) unawaited(ref.read(telemetryServiceProvider).logEvent('favorite_added'));
     // Signed-in users: mirror the change to the account (queued if offline).
     unawaited(
       ref.read(syncControllerProvider.notifier).pushFavorite(quoteId, added: added),

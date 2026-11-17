@@ -15,6 +15,8 @@ class PrefsRepository {
   static const keyReminderEnabled = 'reminder_enabled';
   static const keyReminderHour = 'reminder_hour';
   static const keyReminderMinute = 'reminder_minute';
+  static const keyAnalyticsEnabled = 'analytics_enabled';
+  static const keyPushEnabled = 'push_enabled';
 
   UserPrefs load() {
     final themeName = _prefs.getString(keyThemeMode);
@@ -29,6 +31,8 @@ class PrefsRepository {
       reminderEnabled: _prefs.getBool(keyReminderEnabled) ?? false,
       reminderHour: _prefs.getInt(keyReminderHour) ?? 8,
       reminderMinute: _prefs.getInt(keyReminderMinute) ?? 0,
+      analyticsEnabled: _prefs.getBool(keyAnalyticsEnabled) ?? false,
+      pushEnabled: _prefs.getBool(keyPushEnabled) ?? false,
     );
   }
 
@@ -39,5 +43,7 @@ class PrefsRepository {
     await _prefs.setBool(keyReminderEnabled, prefs.reminderEnabled);
     await _prefs.setInt(keyReminderHour, prefs.reminderHour);
     await _prefs.setInt(keyReminderMinute, prefs.reminderMinute);
+    await _prefs.setBool(keyAnalyticsEnabled, prefs.analyticsEnabled);
+    await _prefs.setBool(keyPushEnabled, prefs.pushEnabled);
   }
 }

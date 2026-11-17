@@ -18,13 +18,15 @@ A motivation app for Android: a daily quote on your home screen, a searchable qu
 - **Daily reminder**: a notification with a quote at a time you choose, including the Android 13 permission flow.
 - **Accounts** (optional): sign up and sign in, session kept in secure storage. Favorites, settings and goals sync to your account and work offline.
 - **AI goal coach** (signed-in users): "Suggest with AI" proposes a daily action and milestones for a goal, and "Encourage me" writes a short note from a goal's streak and progress. It runs through the backend, so the Gemini key never reaches the phone.
+- **Privacy-first analytics** (opt-in): anonymous usage events and crash reports through Firebase Analytics and Crashlytics. Both are off until the user turns on **Settings > Privacy**. Events carry no goal text, quotes, names or emails.
+- **Push notifications** (signed-in users, opt-in): Firebase Cloud Messaging. The phone registers its token with the API, and the server sends through the Firebase Admin SDK.
 - Light and dark themes. The app is fully usable as a guest.
 
 ## Tech stack
 
 | Part | Technology |
 |---|---|
-| App | Flutter (Material 3), Riverpod, go_router, shared_preferences, flutter_secure_storage |
+| App | Flutter (Material 3), Riverpod, go_router, shared_preferences, flutter_secure_storage, Firebase (Analytics, Crashlytics, Cloud Messaging) |
 | Android native | Kotlin: share sheet, home-screen widget, reminder alarm and notification (platform channels) |
 | API | Node.js, Express, Mongoose (MongoDB), zod, JWT, bcryptjs, helmet, express-rate-limit, pino |
 | Tests | Flutter test, Jest, supertest, mongodb-memory-server |
@@ -91,6 +93,7 @@ All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman colle
 | Favorites | `GET /api/favorites`, `POST /api/favorites/merge`, `POST` and `DELETE /api/favorites/:quoteId` |
 | Goals | `GET` and `POST /api/goals`, `GET`, `PATCH`, `PUT` and `DELETE /api/goals/:id`, `POST /api/goals/:id/check-ins`, `DELETE /api/goals/:id/check-ins/:date` |
 | AI | `POST /api/ai/goal-suggestions`, `POST /api/ai/encouragement` (signed in, limited per user per day) |
+| Push | `POST /api/devices` (register this phone's token), `POST /api/devices/unregister`, `POST /api/devices/test` (sends a test push to your devices; 503 if push is not set up) |
 
 ## Configuration (backend)
 
@@ -110,6 +113,17 @@ All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman colle
 | `GEMINI_MODEL` | Gemini model id. If you get a "not found" error, copy a current id from Google AI Studio | gemini-3.1-flash-lite |
 | `AI_DAILY_LIMIT` | AI requests per user per day | 10 |
 | `AI_TIMEOUT_MS` | Time to wait for Gemini | 30000 |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` | Path to the Firebase service-account key file. On Render, a secret file named `firebase-service-account.json` is found automatically | none |
+| `FIREBASE_SERVICE_ACCOUNT` | The same key as JSON text (alternative to the path). Leave both empty to switch push off | none |
+
+## Firebase setup
+
+The Firebase config files are private and not in git.
+
+1. Create a Firebase project and add an Android app with package `com.karthik.mindspark`.
+2. Save `google-services.json` to `android/app/`. Without it the app still builds and runs, and Firebase is simply off.
+3. For server push, generate a service-account key (Project settings > Service accounts) and give it to the API through the variables above. Never commit it.
+4. Collection stays off until the user opts in under Settings > Privacy. Crashlytics shows a first report after the first crash with the switch on.
 
 ## Security notes
 
@@ -129,7 +143,7 @@ All JSON. Protected routes need `Authorization: Bearer <token>`. A Postman colle
 
 ## Roadmap
 
-Firebase Analytics and Crashlytics and push notifications.
+Uptime monitoring and a Play Store release.
 
 ## License
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/platform/share_service.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../models/quote.dart';
 
 /// The text used when a quote is copied or shared.
@@ -27,6 +28,7 @@ Future<void> shareQuote(
   final service = ref.read(shareServiceProvider);
   try {
     await service.shareText(quoteShareText(quote));
+    ref.read(telemetryServiceProvider).logEvent('quote_shared');
   } catch (_) {
     messenger.showSnackBar(
       const SnackBar(content: Text('Sharing is not available on this device')),

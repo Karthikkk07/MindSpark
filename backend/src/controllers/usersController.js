@@ -3,6 +3,7 @@
 const User = require('../models/User');
 const Favorite = require('../models/Favorite');
 const Goal = require('../models/Goal');
+const DeviceToken = require('../models/DeviceToken');
 const AppError = require('../utils/AppError');
 const { parse } = require('../middleware/validate');
 const validators = require('../validators/userValidators');
@@ -35,6 +36,7 @@ async function updatePreferences(req, res) {
 async function deleteAccount(req, res) {
   await Favorite.deleteMany({ user: req.userId });
   await Goal.deleteMany({ user: req.userId });
+  await DeviceToken.deleteMany({ user: req.userId });
   await User.deleteOne({ _id: req.userId });
   res.status(204).end();
 }

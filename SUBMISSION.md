@@ -43,6 +43,7 @@ android/        Kotlin: share sheet, home-screen widget, reminder alarm (platfor
 | Android native | Kotlin platform channels: share, home-screen widget, reminder alarm and notification |
 | Backend | Node.js, Express, Mongoose (MongoDB), zod, JWT, bcryptjs, helmet, express-rate-limit, pino |
 | AI | Google Gemini, called only from the backend so the key never reaches the phone |
+| Firebase | Analytics and Crashlytics (opt-in, off by default, no personal text) and Cloud Messaging push (signed-in users, opt-in). Server push uses `firebase-admin` with a private key kept in Render, never in git |
 | Quality | `flutter analyze`, 140+ Flutter tests, ~100 Jest and supertest backend tests, GitHub Actions CI |
 | Tools | VS Code, Android Studio emulator, Postman, GitHub, AI coding assistance (I can explain every part of the code) |
 

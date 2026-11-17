@@ -16,13 +16,15 @@ const createUsersRouter = require('./routes/users');
 const createFavoritesRouter = require('./routes/favorites');
 const createGoalsRouter = require('./routes/goals');
 const createAiRouter = require('./routes/ai');
+const createDevicesRouter = require('./routes/devices');
+const { createPushService } = require('./services/pushService');
 const { createAiService } = require('./services/aiService');
 const { createGeminiClient } = require('./services/geminiClient');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 /** Builds the Express app. It does not listen or connect to the database. */
 function createApp(overrides = {}) {
-  const { aiGenerate, ...envOverrides } = overrides;
+  const { aiGenerate, pushMessaging, ...envOverrides } = overrides;
   const env = { ...loadEnv(), ...envOverrides };
   if (!env.JWT_SECRET) {
     throw new Error('JWT_SECRET is not set (at least 32 characters, see .env.example)');
@@ -31,6 +33,7 @@ function createApp(overrides = {}) {
   const auth = createAuthService(env);
   const generate = aiGenerate || (env.GEMINI_API_KEY ? createGeminiClient(env) : null);
   const ai = createAiService(env, generate, logger);
+  const push = createPushService(env, logger, pushMessaging);
   const app = express();
   // Behind a host's proxy the client address comes from X-Forwarded-For;
   // without this every user would share one rate limit.
@@ -70,6 +73,7 @@ function createApp(overrides = {}) {
   app.use('/api/favorites', createFavoritesRouter(auth));
   app.use('/api/goals', createGoalsRouter(auth));
   app.use('/api/ai', createAiRouter(auth, ai));
+  app.use('/api/devices', createDevicesRouter(auth, push));
 
   app.use(notFound);
   app.use(errorHandler);

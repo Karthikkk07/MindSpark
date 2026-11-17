@@ -13,8 +13,10 @@ import '../../features/quotes/quote_detail_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/reminders/reminder_sync.dart';
+import '../../features/push/push_registration.dart';
 import '../prefs/user_prefs_controller.dart';
 import '../shell/main_shell.dart';
+import '../telemetry/telemetry_service.dart';
 import 'app_routes.dart';
 
 GoRouter createRouter({required bool Function() onboardingComplete}) {
@@ -106,9 +108,23 @@ GoRouter createRouter({required bool Function() onboardingComplete}) {
 final routerProvider = Provider<GoRouter>((ref) {
   // Starting here keeps the daily reminder in step with the settings.
   ref.read(reminderSyncProvider);
+  // Keeps this phone registered for push notifications while signed in.
+  ref.read(pushSyncProvider);
   final router = createRouter(
     onboardingComplete: () => ref.read(userPrefsProvider).onboardingComplete,
   );
+  _trackScreens(router, ref.read(telemetryServiceProvider));
   ref.onDispose(router.dispose);
   return router;
 });
+
+/// Reports each screen the user opens (the route pattern, never the content).
+void _trackScreens(GoRouter router, TelemetryService telemetry) {
+  String? last;
+  router.routerDelegate.addListener(() {
+    final screen = router.routerDelegate.currentConfiguration.fullPath;
+    if (screen == last) return;
+    last = screen;
+    telemetry.logScreen(screen);
+  });
+}

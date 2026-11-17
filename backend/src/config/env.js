@@ -25,6 +25,10 @@ const schema = z.object({
   GEMINI_MODEL: z.string().min(1).default('gemini-3.1-flash-lite'),
   AI_DAILY_LIMIT: z.coerce.number().int().min(1).default(10),
   AI_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000),
+  // Firebase push: the service-account key as JSON text or as a file path.
+  // Leave both empty to switch push off.
+  FIREBASE_SERVICE_ACCOUNT: z.string().min(1).optional(),
+  FIREBASE_SERVICE_ACCOUNT_PATH: z.string().min(1).optional(),
 });
 
 /** Validates configuration and fails fast with a clear message. */

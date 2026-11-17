@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/prefs/user_prefs_controller.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../repositories/goals_repository.dart';
 import '../sync/sync_controller.dart';
 import 'goal_models.dart';
@@ -101,6 +102,9 @@ class GoalsController extends Notifier<List<Goal>> {
     );
     await _save([...state, goal]);
     _requestSync();
+    unawaited(
+      ref.read(telemetryServiceProvider).logEvent('goal_created', {'category': categoryId}),
+    );
     return id;
   }
 
@@ -148,12 +152,15 @@ class GoalsController extends Notifier<List<Goal>> {
 
   /// Marks today's daily action as done. Safe to repeat, and only for
   /// active goals.
-  Future<void> checkIn(String goalId) {
-    return _edit(goalId, (goal) {
-      final today = dateKey(_now());
+  Future<void> checkIn(String goalId) async {
+    final today = dateKey(_now());
+    final before = state.where((goal) => goal.id == goalId).firstOrNull;
+    final counts = before != null && before.isActive && !before.checkIns.contains(today);
+    await _edit(goalId, (goal) {
       if (!goal.isActive || goal.checkIns.contains(today)) return goal;
       return goal.copyWith(checkIns: [...goal.checkIns, today]..sort());
     });
+    if (counts) unawaited(ref.read(telemetryServiceProvider).logEvent('goal_checked_in'));
   }
 
   /// Undoes a check-in (today's by default).

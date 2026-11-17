@@ -6,6 +6,7 @@ import '../../core/prefs/user_prefs_controller.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/widgets/theme_mode_selector.dart';
 import '../auth/auth_controller.dart';
+import '../push/push_registration.dart';
 import '../quotes/quote_providers.dart';
 import '../reminders/reminder_messages.dart';
 import '../reminders/reminder_service.dart';
@@ -34,8 +35,136 @@ class SettingsScreen extends StatelessWidget {
           Text('Daily reminder', style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
           const _ReminderSection(),
+          const SizedBox(height: 32),
+          Text('Push notifications', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 12),
+          const _PushSection(),
+          const SizedBox(height: 32),
+          Text('Privacy', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 12),
+          const _PrivacySection(),
         ],
       ),
+    );
+  }
+}
+
+class _PushSection extends ConsumerStatefulWidget {
+  const _PushSection();
+
+  @override
+  ConsumerState<_PushSection> createState() => _PushSectionState();
+}
+
+class _PushSectionState extends ConsumerState<_PushSection> {
+  String? _problem;
+  bool _busy = false;
+
+  Future<void> _toggle(bool on) async {
+    final registration = ref.read(pushRegistrationProvider);
+    setState(() {
+      _busy = true;
+      _problem = null;
+    });
+    String? problem;
+    if (on) {
+      switch (await registration.enable()) {
+        case PushEnableResult.enabled:
+          break;
+        case PushEnableResult.notSignedIn:
+          problem = 'Sign in to get push notifications.';
+        case PushEnableResult.permissionDenied:
+          problem = 'Notifications are blocked for MindSpark. '
+              'Allow them in system settings.';
+        case PushEnableResult.unavailable:
+          problem = 'Push notifications are not available right now.';
+      }
+    } else {
+      await registration.disable();
+    }
+    if (mounted) {
+      setState(() {
+        _busy = false;
+        _problem = problem;
+      });
+    }
+  }
+
+  Future<void> _sendTest() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final sent = await ref.read(pushRegistrationProvider).sendTest();
+    final text = switch (sent) {
+      null => 'Could not reach the server. Try again in a moment.',
+      0 => 'No device is registered yet. Try again in a few seconds.',
+      _ => 'Test push sent. It should arrive in a moment.',
+    };
+    messenger.showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final signedIn = ref.watch(currentSessionProvider) != null;
+    final enabled = ref.watch(userPrefsProvider.select((p) => p.pushEnabled));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Push notifications'),
+          subtitle: Text(
+            signedIn
+                ? 'Occasional motivation and news from MindSpark'
+                : 'Sign in to turn this on',
+          ),
+          value: enabled && signedIn,
+          onChanged: signedIn && !_busy ? _toggle : null,
+        ),
+        if (_problem != null)
+          Text(
+            _problem!,
+            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+          ),
+        if (enabled && signedIn) ...[
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: _sendTest,
+            child: const Text('Send a test push'),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _PrivacySection extends ConsumerWidget {
+  const _PrivacySection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final enabled = ref.watch(userPrefsProvider.select((p) => p.analyticsEnabled));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Share usage and crash reports'),
+          subtitle: const Text('Anonymous. Helps us find and fix problems.'),
+          value: enabled,
+          onChanged: (on) =>
+              ref.read(userPrefsProvider.notifier).setAnalyticsEnabled(on),
+        ),
+        Text(
+          'Reports never include your goals, quotes, name or email. '
+          'Nothing is sent unless you turn this on.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }

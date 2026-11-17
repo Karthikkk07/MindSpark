@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/sync/sync_controller.dart';
 import '../../models/user_prefs.dart';
 import '../../repositories/prefs_repository.dart';
+import '../telemetry/telemetry_service.dart';
 
 /// Must be overridden in main() (and in tests) with a loaded instance.
 final sharedPreferencesProvider = Provider<SharedPreferences>(
@@ -61,6 +62,16 @@ class UserPrefsController extends Notifier<UserPrefs> {
 
   Future<void> completeOnboarding() =>
       _update(state.copyWith(onboardingComplete: true));
+
+  /// Opt in or out of anonymous usage statistics and crash reports.
+  Future<void> setAnalyticsEnabled(bool enabled) async {
+    // Collection stops or starts first, so an opt-out is effective at once.
+    await ref.read(telemetryServiceProvider).setEnabled(enabled);
+    await _update(state.copyWith(analyticsEnabled: enabled));
+  }
+
+  Future<void> setPushEnabled(bool enabled) =>
+      _update(state.copyWith(pushEnabled: enabled));
 
   /// Applies the account's settings. Used by sync; does not push back.
   Future<void> applyRemote(UserPrefs remote) async {

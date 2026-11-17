@@ -9,6 +9,8 @@ class UserPrefs {
     this.reminderEnabled = false,
     this.reminderHour = 8,
     this.reminderMinute = 0,
+    this.analyticsEnabled = false,
+    this.pushEnabled = false,
   });
 
   final bool onboardingComplete;
@@ -20,6 +22,13 @@ class UserPrefs {
   final int reminderHour;
   final int reminderMinute;
 
+  /// Opt-in to anonymous usage statistics and crash reports. Stays on this
+  /// device (never synced) and is off until the user turns it on.
+  final bool analyticsEnabled;
+
+  /// Push notifications for this phone. Also local to the device.
+  final bool pushEnabled;
+
   TimeOfDay get reminderTime =>
       TimeOfDay(hour: reminderHour, minute: reminderMinute);
 
@@ -30,6 +39,8 @@ class UserPrefs {
     bool? reminderEnabled,
     int? reminderHour,
     int? reminderMinute,
+    bool? analyticsEnabled,
+    bool? pushEnabled,
   }) {
     return UserPrefs(
       onboardingComplete: onboardingComplete ?? this.onboardingComplete,
@@ -38,6 +49,8 @@ class UserPrefs {
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderHour: reminderHour ?? this.reminderHour,
       reminderMinute: reminderMinute ?? this.reminderMinute,
+      analyticsEnabled: analyticsEnabled ?? this.analyticsEnabled,
+      pushEnabled: pushEnabled ?? this.pushEnabled,
     );
   }
 }
