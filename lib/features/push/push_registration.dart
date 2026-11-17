@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart' show SnackBar, Text;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/prefs/user_prefs_controller.dart';
+import '../../core/widgets/root_messenger.dart';
 import '../auth/auth_controller.dart';
 import 'devices_api.dart';
 import 'push_messaging.dart';
@@ -59,11 +61,13 @@ class PushRegistration {
   }
 
   /// Sends a test push to the signed-in account. Null when it could not be sent.
-  Future<int?> sendTest() async {
+  Future<int?> sendTest({int delaySeconds = 0}) async {
     final session = _ref.read(currentSessionProvider);
     if (session == null) return null;
     try {
-      return await _ref.read(devicesApiProvider).sendTest(session.token);
+      return await _ref
+          .read(devicesApiProvider)
+          .sendTest(session.token, delaySeconds: delaySeconds);
     } on ApiException {
       return null;
     }
@@ -114,4 +118,18 @@ final pushSyncProvider = Provider<void>((ref) {
         (_) => unawaited(registration.syncToken()),
       );
   ref.onDispose(refreshes.cancel);
+
+  // Android only shows pushes in the notification shade while the app is in
+  // the background, so a push that arrives now is shown in the app instead.
+  final incoming = ref.read(pushMessagingProvider).onForegroundMessage.listen((message) {
+    final text = [message.title, message.body]
+        .whereType<String>()
+        .where((part) => part.isNotEmpty)
+        .join(': ');
+    if (text.isEmpty) return;
+    ref.read(rootMessengerKeyProvider).currentState?.showSnackBar(
+          SnackBar(content: Text(text), duration: const Duration(seconds: 6)),
+        );
+  });
+  ref.onDispose(incoming.cancel);
 });

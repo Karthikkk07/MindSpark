@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/widgets/root_messenger.dart';
 import 'features/widget/widget_sync.dart';
 import 'features/quotes/quote_providers.dart';
 
@@ -25,6 +26,7 @@ class MindSparkApp extends ConsumerWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
+    scaffoldMessengerKey: ref.watch(rootMessengerKeyProvider),
       routerConfig: router,
     );
   }

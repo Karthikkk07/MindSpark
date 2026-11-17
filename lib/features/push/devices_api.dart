@@ -10,7 +10,8 @@ abstract class DevicesApi {
   Future<void> unregister(String authToken, String pushToken);
 
   /// Sends a test push to the account's devices. Returns how many got it.
-  Future<int> sendTest(String authToken);
+  /// With [delaySeconds] the server waits first, so the app can be closed.
+  Future<int> sendTest(String authToken, {int delaySeconds = 0});
 }
 
 class ApiDevicesApi implements DevicesApi {
@@ -33,8 +34,12 @@ class ApiDevicesApi implements DevicesApi {
   }
 
   @override
-  Future<int> sendTest(String authToken) async {
-    final json = await _api.post('/devices/test', token: authToken);
+  Future<int> sendTest(String authToken, {int delaySeconds = 0}) async {
+    final json = await _api.post(
+      '/devices/test',
+      body: {if (delaySeconds > 0) 'delaySeconds': delaySeconds},
+      token: authToken,
+    );
     final data = json['data'];
     return data is Map<String, dynamic> ? (data['sent'] as int? ?? 0) : 0;
   }

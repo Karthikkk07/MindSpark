@@ -90,13 +90,17 @@ class _PushSectionState extends ConsumerState<_PushSection> {
     }
   }
 
-  Future<void> _sendTest() async {
+  Future<void> _sendTest({int delaySeconds = 0}) async {
     final messenger = ScaffoldMessenger.of(context);
-    final sent = await ref.read(pushRegistrationProvider).sendTest();
+    final sent = await ref
+        .read(pushRegistrationProvider)
+        .sendTest(delaySeconds: delaySeconds);
     final text = switch (sent) {
       null => 'Could not reach the server. Try again in a moment.',
       0 => 'No device is registered yet. Try again in a few seconds.',
-      _ => 'Test push sent. It should arrive in a moment.',
+      _ when delaySeconds > 0 =>
+        'Push scheduled. Press Home now: it arrives in $delaySeconds seconds.',
+      _ => 'Test push sent. It appears in the app while it is open.',
     };
     messenger.showSnackBar(SnackBar(content: Text(text)));
   }
@@ -131,6 +135,11 @@ class _PushSectionState extends ConsumerState<_PushSection> {
           OutlinedButton(
             onPressed: _sendTest,
             child: const Text('Send a test push'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () => _sendTest(delaySeconds: 10),
+            child: const Text('Send in 10 seconds (leave the app)'),
           ),
         ],
       ],

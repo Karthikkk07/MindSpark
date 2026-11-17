@@ -130,6 +130,32 @@ describe('test push', () => {
     expect(sendEach.mock.calls[0][0].tokens.sort()).toEqual([TOKEN_A, TOKEN_B]);
   });
 
+  test('can wait before sending so the app can be closed', async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'] });
+    try {
+      const { token } = await newUser();
+      await as(token).post('/api/devices', { token: TOKEN_A });
+
+      const res = await as(token).post('/api/devices/test', { delaySeconds: 10 });
+      expect(res.body.data).toEqual({ sent: 1, delaySeconds: 10 });
+      expect(sendEach).not.toHaveBeenCalled();
+
+      await jest.advanceTimersByTimeAsync(10_000);
+      // The send looks up the user's devices first, which is real database I/O.
+      for (let i = 0; i < 200 && sendEach.mock.calls.length === 0; i += 1) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+      expect(sendEach).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('rejects a delay above 30 seconds', async () => {
+    const { token } = await newUser();
+    expect((await as(token).post('/api/devices/test', { delaySeconds: 31 })).status).toBe(400);
+  });
+
   test('sends nothing when the user has no device', async () => {
     const { token } = await newUser();
     const res = await as(token).post('/api/devices/test', {});

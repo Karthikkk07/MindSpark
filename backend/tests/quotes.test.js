@@ -53,9 +53,9 @@ describe('health and basics', () => {
 
   test('rate limiting returns 429 when the limit is exceeded', async () => {
     const limited = createApp({ LOG_LEVEL: 'silent', RATE_LIMIT_MAX: 2 });
-    await request(limited).get('/api/health');
-    await request(limited).get('/api/health');
-    const res = await request(limited).get('/api/health');
+    await request(limited).get('/api/quotes/categories');
+    await request(limited).get('/api/quotes/categories');
+    const res = await request(limited).get('/api/quotes/categories');
     expect(res.status).toBe(429);
     expect(res.body.error.code).toBe('rate_limited');
   });

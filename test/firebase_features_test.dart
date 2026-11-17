@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mindspark/core/prefs/user_prefs_controller.dart';
 import 'package:mindspark/core/telemetry/telemetry_service.dart';
+import 'package:mindspark/core/widgets/root_messenger.dart';
 import 'package:mindspark/features/auth/auth_controller.dart';
 import 'package:mindspark/features/auth/token_store.dart';
 import 'package:mindspark/features/auth/auth_repository.dart';
@@ -40,6 +41,7 @@ class _FakePush implements PushMessaging {
   bool allowed;
   String? pushToken = 'fcm-token';
   final refreshes = StreamController<String>.broadcast();
+  final incoming = StreamController<PushMessage>.broadcast();
 
   @override
   Future<bool> requestPermission() async => allowed;
@@ -49,6 +51,9 @@ class _FakePush implements PushMessaging {
 
   @override
   Stream<String> get onTokenRefresh => refreshes.stream;
+
+  @override
+  Stream<PushMessage> get onForegroundMessage => incoming.stream;
 }
 
 class _FakeDevicesApi implements DevicesApi {
@@ -64,8 +69,8 @@ class _FakeDevicesApi implements DevicesApi {
       calls.add('unregister:$authToken:$pushToken');
 
   @override
-  Future<int> sendTest(String authToken) async {
-    calls.add('test:$authToken');
+  Future<int> sendTest(String authToken, {int delaySeconds = 0}) async {
+    calls.add('test:$authToken:$delaySeconds');
     return testResult;
   }
 }
@@ -238,7 +243,10 @@ void main() {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: setup.container,
-          child: const MaterialApp(home: SettingsScreen()),
+          child: MaterialApp(
+            scaffoldMessengerKey: setup.container.read(rootMessengerKeyProvider),
+            home: const SettingsScreen(),
+          ),
         ),
       );
       await tester.pump();
@@ -282,8 +290,27 @@ void main() {
       await tester.scrollUntilVisible(testButton, 300, scrollable: find.byType(Scrollable).first);
       await tester.tap(testButton);
       await tester.pump();
-      expect(s.devices.calls, contains('test:tok'));
-      expect(find.text('Test push sent. It should arrive in a moment.'), findsOneWidget);
+      expect(s.devices.calls, contains('test:tok:0'));
+      expect(
+        find.text('Test push sent. It appears in the app while it is open.'),
+        findsOneWidget,
+      );
+
+      final delayed = find.text('Send in 10 seconds (leave the app)');
+      await tester.scrollUntilVisible(delayed, 300, scrollable: find.byType(Scrollable).first);
+      await tester.tap(delayed);
+      await tester.pump();
+      expect(s.devices.calls, contains('test:tok:10'));
+    });
+
+    testWidgets('a push that arrives while the app is open is shown in the app', (tester) async {
+      final s = await pumpSettings(tester, signedIn: true);
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump();
+      s.push.incoming.add(const PushMessage(title: 'MindSpark', body: 'Keep sparking!'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('MindSpark: Keep sparking!'), findsOneWidget);
     });
   });
 }

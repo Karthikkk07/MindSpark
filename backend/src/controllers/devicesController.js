@@ -37,15 +37,30 @@ async function unregister(req, res) {
 }
 
 function createSendTest(push) {
+  const message = {
+    title: 'MindSpark',
+    body: 'Push notifications are working. Keep sparking!',
+  };
+
   return async function sendTest(req, res) {
     if (!push.enabled) {
       throw new AppError(503, 'push_unavailable', 'Push notifications are not set up on the server');
     }
-    const sent = await push.sendToUser(req.userId, {
-      title: 'MindSpark',
-      body: 'Push notifications are working. Keep sparking!',
-    });
-    res.json({ data: { sent } });
+    const { delaySeconds = 0 } = parse(validators.testBody, req.body ?? {});
+    if (delaySeconds === 0) {
+      res.json({ data: { sent: await push.sendToUser(req.userId, message) } });
+      return;
+    }
+
+    const devices = await DeviceToken.countDocuments({ user: req.userId });
+    if (devices > 0) {
+      setTimeout(() => {
+        push.sendToUser(req.userId, message).catch((error) => {
+          req.log.error({ err: error.message }, 'Delayed test push failed');
+        });
+      }, delaySeconds * 1000).unref();
+    }
+    res.json({ data: { sent: devices, delaySeconds } });
   };
 }
 
