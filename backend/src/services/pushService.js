@@ -23,21 +23,19 @@ function readServiceAccount(env) {
 
 /** Connects to Firebase Cloud Messaging, or returns null when it is not configured. */
 function createFirebaseMessaging(env, logger) {
-  let serviceAccount;
   try {
-    serviceAccount = readServiceAccount(env);
+    const serviceAccount = readServiceAccount(env);
+    if (!serviceAccount) return null;
+    // Loaded only when configured, so local runs and tests stay light.
+    const { initializeApp, cert } = require('firebase-admin/app');
+    const { getMessaging } = require('firebase-admin/messaging');
+    const app = initializeApp({ credential: cert(serviceAccount) }, `mindspark-${Date.now()}`);
+    return getMessaging(app);
   } catch (error) {
-    logger.error({ err: error.message }, 'Firebase service account could not be read');
+    // A bad key must switch push off, not take the whole API down.
+    logger.error({ err: error.message }, 'Push notifications are off: Firebase setup failed');
     return null;
   }
-  if (!serviceAccount) return null;
-  // Loaded only when configured, so local runs and tests stay light.
-  const admin = require('firebase-admin');
-  const app = admin.initializeApp(
-    { credential: admin.credential.cert(serviceAccount) },
-    `mindspark-${Date.now()}`,
-  );
-  return admin.messaging(app);
 }
 
 /**

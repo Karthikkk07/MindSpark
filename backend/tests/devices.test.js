@@ -1,9 +1,11 @@
 'use strict';
 
 const request = require('supertest');
+const { generateKeyPairSync } = require('node:crypto');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { createApp } = require('../src/app');
+const { createPushService } = require('../src/services/pushService');
 const User = require('../src/models/User');
 const DeviceToken = require('../src/models/DeviceToken');
 
@@ -153,6 +155,37 @@ describe('test push', () => {
     expect(res.body.data.sent).toBe(1);
     expect(await DeviceToken.countDocuments({ token: TOKEN_A })).toBe(0);
     expect(await DeviceToken.countDocuments({ token: TOKEN_B })).toBe(1);
+  });
+
+  test('a broken Firebase key switches push off instead of stopping the API', async () => {
+    const broken = createApp({ LOG_LEVEL: 'silent', FIREBASE_SERVICE_ACCOUNT: '{"project_id":"x"}' });
+    const reg = await request(broken).post('/api/auth/register').send({
+      name: 'Cy',
+      email: 'brokenkey@example.com',
+      password: 'password123',
+    });
+    expect(reg.status).toBe(201);
+    const res = await request(broken)
+      .post('/api/devices/test')
+      .set('Authorization', `Bearer ${reg.body.token}`)
+      .send({});
+    expect(res.status).toBe(503);
+  });
+
+  test('a well-formed Firebase key switches push on', () => {
+    const { privateKey } = generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+    });
+    const key = JSON.stringify({
+      type: 'service_account',
+      project_id: 'demo-project',
+      private_key: privateKey,
+      client_email: 'push@demo-project.iam.gserviceaccount.com',
+    });
+    const push = createPushService({ FIREBASE_SERVICE_ACCOUNT: key }, { error: jest.fn() });
+    expect(push.enabled).toBe(true);
   });
 
   test('answers 503 when push is not configured on the server', async () => {
